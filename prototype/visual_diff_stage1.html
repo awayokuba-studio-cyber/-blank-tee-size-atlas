@@ -1,0 +1,2737 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Blank Tee Size Atlas / Visual Difference Stage 1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #22231f;
+      --muted: #6f716a;
+      --line: #dad8cf;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --baseline: #6d706a;
+      --compare: #126a7a;
+      --compare-soft: rgba(18, 106, 122, 0.08);
+      --user-input: #6f5d8a;
+      --user-input-soft: rgba(111, 93, 138, 0.1);
+      --user-input-border: rgba(111, 93, 138, 0.32);
+      --warm: #9f5f3a;
+      --green: #4e7257;
+      --shadow: 0 16px 40px rgba(42, 39, 33, 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+      gap: 12px;
+      margin: 20px 0 22px;
+      align-items: end;
+    }
+
+    .compare-cascade {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0 12px;
+      font: inherit;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    textarea {
+      min-height: 86px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+
+	    button {
+	      font: inherit;
+	    }
+
+	    .additional-tools {
+	      margin: 22px 0 0;
+	    }
+
+	    .additional-tools > summary {
+	      width: fit-content;
+	      max-width: 100%;
+	      min-height: 42px;
+	      display: inline-flex;
+	      align-items: center;
+	      gap: 10px;
+	      border: 1px solid var(--line);
+	      border-radius: 8px;
+	      padding: 9px 14px;
+	      background: linear-gradient(180deg, #fffefa, #f5f4ef);
+	      color: var(--ink);
+	      font-weight: 700;
+	      line-height: 1.35;
+	      white-space: normal;
+	      cursor: pointer;
+	      box-shadow: 0 1px 8px rgba(42, 39, 33, 0.08);
+	    }
+
+	    .additional-tools > summary::-webkit-details-marker {
+	      display: none;
+	    }
+
+	    .additional-tools > summary::before {
+	      content: "+";
+	      display: inline-grid;
+	      place-items: center;
+	      flex: 0 0 24px;
+	      width: 24px;
+	      height: 24px;
+	      border-radius: 999px;
+	      border: 1px solid rgba(18, 106, 122, 0.28);
+	      background: var(--compare-soft);
+	      color: var(--compare);
+	      font-weight: 800;
+	      line-height: 1;
+	    }
+
+	    .additional-tools[open] > summary::before {
+	      content: "−";
+	    }
+
+	    .additional-tools > summary:hover {
+	      border-color: rgba(18, 106, 122, 0.28);
+	      background: #ffffff;
+	    }
+
+	    .additional-tools > summary:focus-visible {
+	      outline: 2px solid rgba(18, 106, 122, 0.35);
+	      outline-offset: 3px;
+	    }
+
+	    .additional-tools-body {
+	      margin-top: 12px;
+	      display: grid;
+	      gap: 16px;
+	    }
+
+	    .manual-input {
+	      margin: 0 0 18px;
+	      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 14px;
+    }
+
+    .manual-input-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .manual-input-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .manual-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .manual-grid.dimensions {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .manual-optional {
+      display: grid;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .manual-optional summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .manual-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 14px;
+      background: #fffefa;
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .action-button.primary {
+      border-color: rgba(18, 106, 122, 0.35);
+      background: var(--compare-soft);
+      color: var(--compare);
+    }
+
+    .action-button:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .manual-message {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .manual-message[data-tone="notice"] {
+      color: var(--user-input);
+    }
+
+    .manual-message[data-tone="check"] {
+      color: var(--warm);
+    }
+
+    .session-tees {
+      display: grid;
+      gap: 10px;
+      padding-top: 4px;
+      border-top: 1px solid #ece9df;
+    }
+
+    .session-tees-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .session-tees-title {
+      display: grid;
+      gap: 3px;
+    }
+
+    .session-tees-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .persistence-status {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .restore-panel {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #ece9df;
+      border-radius: 8px;
+      background: #fffefa;
+    }
+
+    .restore-panel-title {
+      display: grid;
+      gap: 2px;
+    }
+
+    .restore-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .restore-mode {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .restore-mode label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .restore-mode input {
+      width: 15px;
+      height: 15px;
+      min-height: 15px;
+      margin: 0;
+      accent-color: var(--compare);
+    }
+
+    .restore-message {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .restore-message[data-tone="check"] {
+      color: var(--warm);
+    }
+
+    .restore-message[data-tone="notice"] {
+      color: var(--user-input);
+    }
+
+    .session-tee-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .session-tee-empty {
+      min-height: 72px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fffefa;
+      font-size: 13px;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .session-tee-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      border: 1px solid var(--user-input-border);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(111, 93, 138, 0.045);
+    }
+
+    .session-tee-main {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .session-tee-name {
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .session-tee-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .session-tee-dimensions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .dimension-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid rgba(111, 93, 138, 0.24);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #fffefa;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .session-tee-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 190px;
+    }
+
+    .action-button.small {
+      min-height: 34px;
+      padding: 0 11px;
+      font-size: 12px;
+    }
+
+    .mode-switch {
+      display: inline-grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      width: min(100%, 360px);
+      gap: 4px;
+      margin: 0 0 18px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f1f0eb;
+    }
+
+    .mode-button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: 0 1px 8px rgba(42, 39, 33, 0.08);
+    }
+
+    .guide-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin: -6px 0 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .guide-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      cursor: pointer;
+    }
+
+    .guide-toggle input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: var(--compare);
+    }
+
+    .guide-toggle[aria-disabled="true"] {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .surface {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .visual,
+    .metrics,
+    .memo,
+    .source-block {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+	    .visual {
+	      min-height: 560px;
+	      padding: 12px;
+	      display: grid;
+	      grid-template-rows: auto minmax(0, 1fr) auto;
+	      gap: 12px;
+    }
+
+    .visual-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h2 {
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 24px;
+      height: 0;
+      border-top: 3px solid var(--baseline);
+    }
+
+    .swatch.compare {
+      border-top-color: var(--compare);
+      border-top-style: dashed;
+    }
+
+    .legend[data-mode="fit"] .swatch.compare {
+      border-top-style: solid;
+    }
+
+    .svg-wrap {
+      min-height: 430px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #ebe8df;
+      border-radius: 8px;
+      background: #fffefa;
+      overflow: hidden;
+    }
+
+    svg {
+      width: 100%;
+      height: min(62vh, 510px);
+      min-height: 360px;
+      display: block;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+	    .visual-note {
+	      display: grid;
+	      gap: 4px;
+	    }
+
+	    #measurementGuideNote {
+	      min-height: 18px;
+	    }
+
+    .side {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .metrics {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 98px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      gap: 4px;
+      align-content: start;
+      background: #fffefa;
+    }
+
+    .metric-name {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      line-height: 1.1;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-caption {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      background: #fffefa;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .pill.source {
+      border-color: rgba(18, 106, 122, 0.28);
+      background: var(--compare-soft);
+    }
+
+    .pill.status {
+      border-color: rgba(159, 95, 58, 0.3);
+      background: rgba(159, 95, 58, 0.08);
+    }
+
+    .pill.classification {
+      border-color: rgba(78, 114, 87, 0.3);
+      background: rgba(78, 114, 87, 0.08);
+    }
+
+    .pill.user-input {
+      border-color: var(--user-input-border);
+      background: var(--user-input-soft);
+      color: var(--user-input);
+    }
+
+    .memo,
+    .source-block {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .memo p,
+    .source-block p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .memo-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .memo-item {
+      border-left: 3px solid var(--line);
+      padding-left: 10px;
+    }
+
+    .memo-item strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .source-lines {
+      display: grid;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .source-lines strong {
+      color: var(--ink);
+    }
+
+    footer {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto 36px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        width: min(100% - 24px, 680px);
+        padding-top: 22px;
+      }
+
+      .toolbar,
+      .compare-cascade,
+      .manual-grid,
+      .manual-grid.dimensions,
+      .session-tee-row,
+      .surface,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .session-tees-head {
+        display: grid;
+      }
+
+      .session-tees-actions {
+        justify-content: flex-start;
+      }
+
+      .session-tee-actions {
+        justify-content: flex-start;
+        min-width: 0;
+      }
+
+      .restore-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .guide-control {
+        margin-top: -8px;
+      }
+
+      .visual {
+        min-height: auto;
+      }
+
+      .visual-top {
+        display: grid;
+      }
+
+      .legend {
+        justify-content: flex-start;
+      }
+
+      .svg-wrap {
+        min-height: 320px;
+        overflow-x: auto;
+        justify-items: start;
+      }
+
+      svg {
+        height: 390px;
+        min-height: 320px;
+        width: 680px;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Visual Difference Stage 1</h1>
+      <p class="lead">everyone / CRC / Pro Club の3件だけを使った、基準Tとの差分確認用モック。サイズ感の差分理解用で、厳密な型紙ではありません。</p>
+    </header>
+
+	    <section class="toolbar" aria-label="comparison controls">
+	      <label>
+	        基準
+	        <select id="baselineSelect"></select>
+      </label>
+      <div class="compare-cascade" aria-label="comparison selector">
+        <label>
+          比較するTシャツ：ブランド
+          <select id="compareBrandSelect"></select>
+        </label>
+        <label>
+          比較するTシャツ：製品
+          <select id="compareProductSelect"></select>
+        </label>
+        <label>
+          比較するTシャツ：サイズ
+          <select id="compareSizeSelect"></select>
+	        </label>
+	      </div>
+	    </section>
+
+	    <section class="mode-switch" aria-label="display mode">
+	      <button class="mode-button" type="button" data-mode="compare" aria-pressed="true">比較</button>
+	      <button class="mode-button" type="button" data-mode="fit" aria-pressed="false">着用差分</button>
+    </section>
+
+    <section class="guide-control" aria-label="measurement guide control">
+      <label class="guide-toggle" id="measurementGuideToggle">
+        <input id="measurementGuideInput" type="checkbox">
+        <span>採寸ガイド</span>
+      </label>
+    </section>
+
+    <section class="surface">
+      <section class="visual" aria-label="outline comparison">
+        <div class="visual-top">
+          <div>
+            <h2 id="pairTitle">Outline</h2>
+            <p class="hint" id="modeDescription">front flat technical style の前面図に、着丈・身幅・肩幅・袖丈の差分を重ねています。</p>
+          </div>
+          <div class="legend" id="legend" aria-label="legend" data-mode="compare">
+            <span class="legend-item"><span class="swatch"></span><span>baseline</span></span>
+            <span class="legend-item"><span class="swatch compare"></span><span>compared</span></span>
+          </div>
+        </div>
+        <div class="svg-wrap">
+          <svg id="outlineSvg" viewBox="0 0 720 560" role="img" aria-labelledby="svgTitle svgDesc">
+            <title id="svgTitle">T-shirt outline comparison</title>
+            <desc id="svgDesc">Baseline and compared T-shirt outlines are drawn at the same scale.</desc>
+          </svg>
+        </div>
+        <div class="visual-note">
+          <p class="hint" id="scaleHint"></p>
+          <p class="hint" id="modeCaution"></p>
+          <p class="hint" id="measurementGuideNote"></p>
+          <p class="hint">アウトラインは寸法差分を理解するための簡易表示であり、正確な型紙再現ではありません。 Outline is a simplified visual guide based on measurements, not an exact garment pattern.</p>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="metrics" aria-label="dimension differences">
+          <h2>差分</h2>
+          <div class="metric-grid" id="metricGrid"></div>
+          <div class="labels" id="summaryLabels"></div>
+        </section>
+
+        <section class="memo" aria-label="awa comments">
+          <h2>体感メモ</h2>
+          <div class="memo-grid" id="memoGrid"></div>
+        </section>
+
+        <section class="source-block" aria-label="source and status">
+          <h2>source / status</h2>
+          <div class="labels" id="badges"></div>
+          <div class="source-lines" id="sourceLines"></div>
+        </section>
+	      </aside>
+	    </section>
+
+	    <details class="additional-tools">
+	      <summary>自分のTを追加・保存・書き出し・読み戻し（タップで開く）</summary>
+	      <div class="additional-tools-body">
+	        <section class="manual-input" aria-label="manual input">
+	          <div class="manual-input-head">
+	            <div class="manual-input-title">
+	              <h2>Manual Input</h2>
+	              <p class="hint">入力したTは、このブラウザに保存されます。このデバイスのみ・未同期です。</p>
+	            </div>
+	            <span class="pill user-input">ユーザー入力 / 未検証</span>
+	          </div>
+	          <form class="manual-form" id="manualInputForm" novalidate>
+	            <div class="manual-grid">
+	              <label>
+	                Tシャツ名 *
+	                <input id="manualName" name="name" type="text" maxlength="50" autocomplete="off" placeholder="例: 気になる無地T">
+	              </label>
+	              <label>
+	                サイズ表記 *
+	                <input id="manualSize" name="size_label" type="text" maxlength="10" autocomplete="off" placeholder="例: L">
+	              </label>
+	            </div>
+	            <div class="manual-grid dimensions">
+	              <label>
+	                着丈 * cm
+	                <input id="manualLength" name="length_cm" inputmode="decimal" autocomplete="off" placeholder="68.5">
+	              </label>
+	              <label>
+	                身幅 * cm
+	                <input id="manualWidth" name="width_cm" inputmode="decimal" autocomplete="off" placeholder="56">
+	              </label>
+	              <label>
+	                肩幅 * cm
+	                <input id="manualShoulder" name="shoulder_cm" inputmode="decimal" autocomplete="off" placeholder="52">
+	              </label>
+	              <label>
+	                袖丈 * cm
+	                <input id="manualSleeve" name="sleeve_cm" inputmode="decimal" autocomplete="off" placeholder="24">
+	              </label>
+	            </div>
+	            <details class="manual-optional">
+	              <summary>任意項目</summary>
+	              <div class="manual-grid">
+	                <label>
+	                  ブランド
+	                  <input id="manualBrand" name="brand" type="text" maxlength="30" autocomplete="off">
+	                </label>
+	                <label>
+	                  商品名
+	                  <input id="manualProduct" name="product_name" type="text" maxlength="50" autocomplete="off">
+	                </label>
+	              </div>
+	              <label>
+	                メモ
+	                <textarea id="manualMemo" name="memo" maxlength="300" placeholder="体感や気になる点を短く"></textarea>
+	              </label>
+	            </details>
+	            <div class="manual-actions">
+	              <button class="action-button primary" id="manualAddButton" type="submit" disabled>入力したTを比較対象に追加</button>
+	              <button class="action-button" id="manualClearButton" type="button">入力をクリア</button>
+	              <span class="manual-message" id="manualInputMessage" aria-live="polite">このブラウザに保存されます。verified / 本番データには反映されません。</span>
+	            </div>
+	          </form>
+	          <section class="session-tees" aria-label="session tees">
+	            <div class="session-tees-head">
+	              <div class="session-tees-title">
+	                <h2>このブラウザの入力Tシャツ</h2>
+	                <p class="hint">入力したTだけを表示します。このデバイス内の比較用で、未同期です。</p>
+	              </div>
+	              <div class="session-tees-actions">
+	                <button class="action-button small primary" id="exportUserInputsButton" type="button" disabled>バックアップ用に書き出す</button>
+	                <button class="action-button small" id="sessionClearButton" type="button" disabled>すべて一覧から外す</button>
+	                <button class="action-button small" id="localDataClearButton" type="button">このブラウザの入力データを消す</button>
+	              </div>
+	            </div>
+	            <p class="persistence-status" id="persistenceStatus" aria-live="polite"></p>
+	            <section class="restore-panel" aria-label="backup restore">
+	              <div class="restore-panel-title">
+	                <h2>バックアップを読み戻す</h2>
+	                <p class="hint">この画面で書き出したJSONだけを対象にします。取り込んだTはユーザー入力 / 未検証として扱います。</p>
+	              </div>
+	              <div class="restore-controls">
+	                <label>
+	                  JSON backup
+	                  <input id="backupRestoreFile" type="file" accept="application/json,.json">
+	                </label>
+	                <button class="action-button small primary" id="restoreBackupButton" type="button" disabled>読み戻す</button>
+	              </div>
+	              <div class="restore-mode" aria-label="restore mode">
+	                <label><input type="radio" name="restoreMode" value="merge" checked>現在の一覧に追加</label>
+	                <label><input type="radio" name="restoreMode" value="replace">置き換え</label>
+	              </div>
+	              <p class="restore-message" id="restoreMessage" aria-live="polite">読み戻し方法を選んでJSONを指定してください。</p>
+	            </section>
+	            <div class="session-tee-list" id="sessionTeeList" aria-live="polite"></div>
+	          </section>
+	        </section>
+	      </div>
+	    </details>
+	  </main>
+
+  <footer>
+    <p>Private prototype / not for distribution / last updated: 2026-05-30 / Stage 3 backup restore</p>
+  </footer>
+
+  <script>
+    const FALLBACK_DATA = {
+      meta: {
+        baseline_default: "everyone_3p_ss:L",
+        baseline_options: ["everyone_3p_ss:L", "crc_ss_tubular_ss:L"]
+      },
+      items: [
+	        {
+	          tee_id: "everyone_3p_ss",
+	          display_name: "everyone 3P tee shirts BLACK",
+	          brand: "everyone",
+	          product_name: "3P tee shirts BLACK",
+	          size: "L",
+	          role: "current_data_anchor",
+          source_type: "official_current",
+          spec_type: "official_current",
+          status_badge: "current data anchor",
+          confidence_label: "official source / partial verified",
+          classification_badge: "anchor",
+          verification_status: "anchor_dimension_status pending_verification",
+          source_label: "official current",
+          dimensions: { length_cm: 68.5, width_cm: 64.0, shoulder_cm: 54.0, sleeve_cm: 24.5 },
+          note: "現在の比較基準。anchor_dimension_status は pending_verification のまま。",
+          awa_comment: "アンカー T。実着判断としてオンオフともに現状ベスト。ロゴ・装飾なしの黒無地で成立。バインダーネックの安定感が首元のだらしなさを防いでいる。"
+        },
+	        {
+	          tee_id: "crc_ss_tubular_ss",
+	          display_name: "CRC SS TUBULAR T-SHIRT",
+	          brand: "CRC",
+	          product_name: "SS TUBULAR T-SHIRT",
+	          size: "L",
+	          role: "essential_candidate",
+          source_type: "awa_measured",
+          spec_type: "awa_measured_prewash",
+          status_badge: "essential candidate / prewash",
+          confidence_label: "high for owned item measurement",
+          classification_badge: "observation target",
+          verification_status: "measured_by_awa_prewash",
+          source_label: "awa measured",
+          dimensions: { length_cm: 74.0, width_cm: 56.0, shoulder_cm: 55.0, sleeve_cm: 24.0 },
+          note: "0回洗濯前のawa実測。Pro Clubに近い観察対象。身幅は少し狭い。",
+          awa_comment: "首元は詰まりすぎず良い。アメリカコットンのハリ感があり、丸胴の肌触りが良い。CROSS & STITCH 8ozより軽く、ちょうどいい。everyoneより身幅は締まっているが悪くない。全体的にはPro Clubに近い。着丈はPro Clubより短く着やすい印象。ただし身幅は少し狭い。"
+        },
+	        {
+	          tee_id: "proclub_heavyweight_ss",
+	          display_name: "Pro Club Heavyweight",
+	          brand: "Pro Club",
+	          product_name: "Heavyweight",
+	          size: "L",
+	          role: "seller_actual_reference",
+          source_type: "seller_measured",
+          spec_type: "seller_measured_unverified",
+          status_badge: "staging / partial_triggered_style_no_pending",
+          confidence_label: "low / pending official source",
+          classification_badge: "near anchor candidate",
+          verification_status: "pending_official_source",
+          source_label: "retailer observation",
+          dimensions: { length_cm: 76.0, width_cm: 56.0, shoulder_cm: 50.0, sleeve_cm: 23.0 },
+          note: "第三者リテーラー記載値。公式 Pro Club source ではなく staging 由来として扱う。",
+          awa_comment: "着用感として文句ない。首元は程よく詰まっている。everyone より身幅は細い印象。生地は everyone よりシャリ感があり、アメリカコットン由来のラフさがある。"
+        }
+      ]
+    };
+
+    const AXES = [
+      ["length_cm", "着丈"],
+      ["width_cm", "身幅"],
+      ["shoulder_cm", "肩幅"],
+      ["sleeve_cm", "袖丈"]
+    ];
+    const DIMENSION_LIMITS = {
+      length_cm: [30, 120],
+      width_cm: [25, 90],
+      shoulder_cm: [30, 80],
+      sleeve_cm: [10, 50]
+    };
+
+    const USER_INPUT_STORAGE_KEY = "atlas_user_inputs_v1";
+    const USER_INPUT_SCHEMA_VERSION = 1;
+    const ATLAS_STORAGE_PREFIX = "atlas_";
+
+    const state = {
+      data: FALLBACK_DATA,
+      userInputs: [],
+      userInputCounter: 0,
+      baselineKey: "everyone_3p_ss:L",
+      compareKey: "crc_ss_tubular_ss:L",
+      mode: "compare",
+      measurementGuide: false
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const keyOf = (item) => `${item.tee_id}:${item.size}`;
+    const isUserInput = (item) => item?.source_kind === "user_input" || item?.source_type === "user_input";
+    const labelOf = (item) => isUserInput(item) ? item.display_name : `${item.display_name} ${item.size}`;
+    const cm = (value) => Number.isFinite(value) ? value.toFixed(1) : "—";
+    const sign = (value) => value > 0 ? "+" : "";
+    const classificationLabels = {
+      anchor: "アンカー",
+      "observation target": "観察対象",
+      "near anchor candidate": "準アンカー候補",
+      user_input: "ユーザー入力"
+    };
+    const compactTeeLabels = {
+      everyone_3p_ss: "everyone",
+      crc_ss_tubular_ss: "CRC",
+      proclub_heavyweight_ss: "Pro Club"
+    };
+
+    async function loadData() {
+      try {
+        const response = await fetch("../data/mock_tees_stage2.json", { cache: "no-store" });
+        if (response.ok) state.data = await response.json();
+      } catch (_) {
+        state.data = FALLBACK_DATA;
+      }
+
+      state.baselineKey = state.data.meta?.baseline_default || state.baselineKey;
+      loadUserInputsFromLocalStorage();
+      state.compareKey = itemByKey(state.compareKey) ? state.compareKey : fallbackCompareKey();
+      setupManualInput();
+      setupSessionTeeList();
+      renderControls();
+      renderModeControls();
+      renderMeasurementGuideControl();
+      render();
+    }
+
+    function renderControls() {
+      const baselineSelect = $("baselineSelect");
+      const brandSelect = $("compareBrandSelect");
+      const productSelect = $("compareProductSelect");
+      const sizeSelect = $("compareSizeSelect");
+      const baselineOptions = new Set(state.data.meta?.baseline_options || []);
+
+      baselineSelect.innerHTML = "";
+
+      baseItems().forEach((item) => {
+        const key = keyOf(item);
+        if (baselineOptions.has(key)) {
+          baselineSelect.appendChild(new Option(labelOf(item), key));
+        }
+      });
+
+      if (!itemByKey(state.compareKey) || state.compareKey === state.baselineKey) {
+        state.compareKey = fallbackCompareKey();
+      }
+
+      baselineSelect.value = state.baselineKey;
+      syncCompareCascade(state.compareKey);
+
+      baselineSelect.onchange = () => {
+        state.baselineKey = baselineSelect.value;
+        if (state.compareKey === state.baselineKey) {
+          state.compareKey = fallbackCompareKey();
+        }
+        renderControls();
+        render();
+      };
+
+      brandSelect.onchange = () => {
+        selectFirstAvailableCompare(brandSelect.value, null);
+        renderControls();
+        render();
+      };
+
+      productSelect.onchange = () => {
+        selectFirstAvailableCompare(brandSelect.value, productSelect.value);
+        renderControls();
+        render();
+      };
+
+      sizeSelect.onchange = () => {
+        state.compareKey = sizeSelect.value;
+        render();
+      };
+    }
+
+    function compareBrandOf(item) {
+      return isUserInput(item) ? "ユーザー入力" : item.brand || "未分類";
+    }
+
+	    function compareProductOf(item) {
+	      if (isUserInput(item)) return item.name || item.display_name || "ユーザー入力 T シャツ";
+	      return item.product_name || "未分類";
+	    }
+
+    function uniqueValues(values) {
+      return [...new Set(values)];
+    }
+
+    function compareItemsForBrand(brand) {
+      return compareItems().filter((item) => compareBrandOf(item) === brand);
+    }
+
+    function compareItemsForProduct(brand, product) {
+      return compareItemsForBrand(brand).filter((item) => compareProductOf(item) === product);
+    }
+
+    function compareQualifier(item) {
+      if (item.tee_id === "crc_ss_tubular_ss" && item.spec_type === "awa_measured_prewash") return "awa実測";
+      if (item.tee_id === "crc_ss_tubular_chart_ss") return "公式チャート";
+      const match = String(item.display_name || "").match(/（(.+?)）/);
+      if (match) return match[1];
+      return "";
+    }
+
+    function compareSizeLabel(item, groupItems) {
+      if (isUserInput(item)) return `${item.size} / ${item.display_name}`;
+      const qualifier = compareQualifier(item);
+      if (qualifier) return `${item.size}（${qualifier}）`;
+      const duplicateSize = groupItems.filter((candidate) => candidate.size === item.size).length > 1;
+      return duplicateSize ? `${item.size} / ${item.display_name}` : item.size;
+    }
+
+    function fillSelect(select, options) {
+      select.innerHTML = "";
+      options.forEach(({ value, label }) => {
+        select.appendChild(new Option(label, value));
+      });
+      select.disabled = options.length === 0;
+    }
+
+    function selectFirstAvailableCompare(brand, product) {
+      const brandItems = compareItemsForBrand(brand);
+      const products = uniqueValues(brandItems.map(compareProductOf));
+      const nextProduct = product && products.includes(product) ? product : products[0];
+      const nextItem = compareItemsForProduct(brand, nextProduct)[0];
+      if (nextItem) state.compareKey = keyOf(nextItem);
+    }
+
+    function syncCompareCascade(compareKey) {
+      const brandSelect = $("compareBrandSelect");
+      const productSelect = $("compareProductSelect");
+      const sizeSelect = $("compareSizeSelect");
+      const selected = itemByKey(compareKey) || itemByKey(fallbackCompareKey());
+      if (!selected) return;
+
+      const selectedBrand = compareBrandOf(selected);
+      const selectedProduct = compareProductOf(selected);
+      const brands = uniqueValues(compareItems().map(compareBrandOf));
+      fillSelect(brandSelect, brands.map((brand) => ({ value: brand, label: brand })));
+      brandSelect.value = selectedBrand;
+
+      const products = uniqueValues(compareItemsForBrand(selectedBrand).map(compareProductOf));
+      fillSelect(productSelect, products.map((product) => ({ value: product, label: product })));
+      productSelect.value = selectedProduct;
+
+      const sizeItems = compareItemsForProduct(selectedBrand, selectedProduct);
+      fillSelect(sizeSelect, sizeItems.map((item) => ({
+        value: keyOf(item),
+        label: compareSizeLabel(item, sizeItems)
+      })));
+      sizeSelect.value = keyOf(selected);
+    }
+
+    function renderModeControls() {
+      document.querySelectorAll(".mode-button").forEach((button) => {
+        button.setAttribute("aria-pressed", button.dataset.mode === state.mode ? "true" : "false");
+        button.addEventListener("click", () => {
+          state.mode = button.dataset.mode;
+          document.querySelectorAll(".mode-button").forEach((item) => {
+            item.setAttribute("aria-pressed", item.dataset.mode === state.mode ? "true" : "false");
+          });
+          render();
+        });
+      });
+    }
+
+    function renderMeasurementGuideControl() {
+      const input = $("measurementGuideInput");
+      input.checked = state.measurementGuide;
+      input.addEventListener("change", () => {
+        state.measurementGuide = input.checked;
+        render();
+      });
+    }
+
+    function updateMeasurementGuideControl() {
+      const isCompareMode = state.mode === "compare";
+      const input = $("measurementGuideInput");
+      const toggle = $("measurementGuideToggle");
+      input.disabled = !isCompareMode;
+      input.checked = state.measurementGuide;
+      toggle.setAttribute("aria-disabled", isCompareMode ? "false" : "true");
+      $("measurementGuideNote").textContent = isCompareMode && state.measurementGuide
+        ? "登録寸法の反映位置を示す補助ガイドです。"
+        : "";
+    }
+
+    function setupManualInput() {
+      if (state.manualInputReady) return;
+      state.manualInputReady = true;
+
+      const form = $("manualInputForm");
+      const fields = manualInputFields();
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const result = validateManualInput();
+        if (!result.ok) {
+          setManualMessage(result.message, "check");
+          updateManualSubmitState();
+          return;
+        }
+
+        const item = createUserInputItem(result.value);
+        state.userInputs.push(item);
+        persistUserInputs();
+        state.compareKey = keyOf(item);
+        renderControls();
+        render();
+        form.reset();
+        updateManualSubmitState();
+        setManualMessage("比較対象に追加しました。このブラウザに保存しました。", "notice");
+      });
+
+      $("manualClearButton").addEventListener("click", () => {
+        form.reset();
+        clearUserInputs();
+        updateManualSubmitState();
+        setManualMessage("入力をクリアしました。", "notice");
+      });
+
+      fields.forEach((field) => {
+        field.addEventListener("input", updateManualSubmitState);
+      });
+      updateManualSubmitState();
+    }
+
+    function manualInputFields() {
+      return [
+        $("manualName"),
+        $("manualSize"),
+        $("manualLength"),
+        $("manualWidth"),
+        $("manualShoulder"),
+        $("manualSleeve"),
+        $("manualBrand"),
+        $("manualProduct"),
+        $("manualMemo")
+      ];
+    }
+
+    function setManualMessage(message, tone = "") {
+      const target = $("manualInputMessage");
+      target.textContent = message;
+      target.dataset.tone = tone;
+    }
+
+    function updateManualSubmitState() {
+      const result = validateManualInput();
+      $("manualAddButton").disabled = !result.ok;
+
+      const hasInput = manualInputFields().some((field) => field.value.trim() !== "");
+      if (!hasInput) {
+        setManualMessage("このブラウザに保存されます。verified / 本番データには反映されません。", "");
+      } else if (result.ok) {
+        setManualMessage("入力したTを比較対象に追加できます。", "notice");
+      } else {
+        setManualMessage(result.message, "check");
+      }
+    }
+
+    function normalizeNumberText(value) {
+      return String(value || "")
+        .trim()
+        .replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xfee0))
+        .replace(/[．]/g, ".")
+        .replace(/[，,]/g, "");
+    }
+
+    function parseDimensionValue(input, label, min, max) {
+      const normalized = normalizeNumberText(input.value);
+      if (!normalized) return { ok: false, message: "入力されていない項目があります" };
+      if (!/^\d+(\.\d)?$/.test(normalized)) return { ok: false, message: `${label}は数字で入力してください` };
+
+      const value = Number(normalized);
+      if (!Number.isFinite(value) || value <= 0) {
+        return { ok: false, message: "0より大きい数値で入力してください" };
+      }
+      if (value < min || value > max) {
+        return { ok: false, message: `${label}は ${min}〜${max} cm の範囲で入力してください` };
+      }
+      return { ok: true, value: Number(value.toFixed(1)), normalized };
+    }
+
+    function validateManualInput() {
+      const name = $("manualName").value.trim();
+      const sizeLabel = $("manualSize").value.trim();
+      const brand = $("manualBrand").value.trim();
+      const productName = $("manualProduct").value.trim();
+      const memo = $("manualMemo").value.trim();
+
+      if (!name || !sizeLabel) return { ok: false, message: "入力されていない項目があります" };
+      if (name.length > 50) return { ok: false, message: "Tシャツ名は50文字以内で入力してください" };
+      if (sizeLabel.length > 10) return { ok: false, message: "サイズ表記は10文字以内で入力してください" };
+      if (brand.length > 30) return { ok: false, message: "ブランドは30文字以内で入力してください" };
+      if (productName.length > 50) return { ok: false, message: "商品名は50文字以内で入力してください" };
+      if (memo.length > 300) return { ok: false, message: "メモは300文字以内で入力してください" };
+
+      const dimensions = [
+        ["length_cm", $("manualLength"), "着丈", ...DIMENSION_LIMITS.length_cm],
+        ["width_cm", $("manualWidth"), "身幅", ...DIMENSION_LIMITS.width_cm],
+        ["shoulder_cm", $("manualShoulder"), "肩幅", ...DIMENSION_LIMITS.shoulder_cm],
+        ["sleeve_cm", $("manualSleeve"), "袖丈", ...DIMENSION_LIMITS.sleeve_cm]
+      ].reduce((acc, [key, input, label, min, max]) => {
+        if (acc.issue) return acc;
+        const parsed = parseDimensionValue(input, label, min, max);
+        if (!parsed.ok) return { issue: parsed.message };
+        acc.values[key] = parsed.value;
+        return acc;
+      }, { values: {} });
+
+      if (dimensions.issue) return { ok: false, message: dimensions.issue };
+
+      return {
+        ok: true,
+        value: {
+          name,
+          size_label: sizeLabel,
+          brand,
+          product_name: productName,
+          memo,
+          dimensions: dimensions.values
+        }
+      };
+    }
+
+    function nextUserInputId() {
+      state.userInputCounter += 1;
+      return `user_input_${Date.now()}_${state.userInputCounter}`;
+    }
+
+    function createUserInputItem(value) {
+      const displayName = `${value.name} ${value.size_label}`;
+
+      return {
+        tee_id: nextUserInputId(),
+        source_kind: "user_input",
+        display_name: displayName,
+        name: value.name,
+        brand: value.brand || "—",
+        product_name: value.product_name || "—",
+        size: value.size_label,
+        role: "user_input_temporary",
+        source_type: "user_input",
+        spec_type: "user_input_unverified",
+        status_badge: "未検証 / 一時的",
+        confidence_label: "user_input / not verified",
+        classification_badge: "user_input",
+        verification_status: "user_input_unverified",
+        source_label: "ユーザー入力",
+        dimensions: value.dimensions,
+        awa_comment: value.memo || "",
+        note: "ユーザー入力 / 一時的 / ページを閉じると消えます / verified ではありません",
+        schema_version: USER_INPUT_SCHEMA_VERSION
+      };
+    }
+
+    function storageEnvelope(items = state.userInputs) {
+      return {
+        schema_version: USER_INPUT_SCHEMA_VERSION,
+        updated_at: new Date().toISOString(),
+        items: items.map((item) => withUserInputSchema(item))
+      };
+    }
+
+    function withUserInputSchema(item) {
+      return {
+        ...item,
+        schema_version: USER_INPUT_SCHEMA_VERSION
+      };
+    }
+
+    function validStoredUserInput(item) {
+      if (!item || !isUserInput(item)) return false;
+      const dimensions = item.dimensions || {};
+      return (
+        typeof item.tee_id === "string" &&
+        typeof item.display_name === "string" &&
+        typeof item.size === "string" &&
+        ["length_cm", "width_cm", "shoulder_cm", "sleeve_cm"].every((key) => {
+          const value = Number(dimensions[key]);
+          const [min, max] = DIMENSION_LIMITS[key];
+          return Number.isFinite(value) && value >= min && value <= max;
+        })
+      );
+    }
+
+    function loadUserInputsFromLocalStorage() {
+      try {
+        const raw = window.localStorage.getItem(USER_INPUT_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        const items = Array.isArray(parsed?.items) ? parsed.items : [];
+        const usedTeeIds = new Set(baseItems().map((item) => item.tee_id));
+        state.userInputs = items
+          .filter(validStoredUserInput)
+          .map((item) => normalizeImportedUserInput(item, usedTeeIds));
+        state.userInputCounter = state.userInputs.length;
+      } catch (_) {
+        state.userInputs = [];
+      }
+    }
+
+    function persistUserInputs() {
+      try {
+        window.localStorage.setItem(USER_INPUT_STORAGE_KEY, JSON.stringify(storageEnvelope()));
+        setPersistenceStatus(`${state.userInputs.length}件をこのブラウザに保存しています。このデバイスのみ・未同期です。`);
+      } catch (_) {
+        setPersistenceStatus("このブラウザへの保存を確認できませんでした。表示中の入力は画面上でのみ扱います。", "check");
+      }
+    }
+
+    function setPersistenceStatus(message, tone = "") {
+      const target = $("persistenceStatus");
+      if (!target) return;
+      target.textContent = message;
+      target.dataset.tone = tone;
+    }
+
+    function clearAtlasLocalStorage() {
+      Array.from({ length: window.localStorage.length }, (_, index) => window.localStorage.key(index))
+        .filter(Boolean)
+        .filter((key) => key.startsWith(ATLAS_STORAGE_PREFIX))
+        .forEach((key) => window.localStorage.removeItem(key));
+    }
+
+    function localDateStamp(date = new Date()) {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      return `${yyyy}${mm}${dd}`;
+    }
+
+    function exportUserInputsJSON() {
+      const now = new Date();
+      const payload = {
+        schema_version: USER_INPUT_SCHEMA_VERSION,
+        exported_at: now.toISOString(),
+        note: "backup only, not verified",
+        items: state.userInputs.map((item) => withUserInputSchema(item))
+      };
+      const yyyymmdd = localDateStamp(now);
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `atlas_user_inputs_${yyyymmdd}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function setRestoreMessage(message, tone = "") {
+      const target = $("restoreMessage");
+      target.textContent = message;
+      target.dataset.tone = tone;
+    }
+
+    function updateRestoreButtonState() {
+      $("restoreBackupButton").disabled = !$("backupRestoreFile").files?.length;
+    }
+
+    function selectedRestoreMode() {
+      return document.querySelector('input[name="restoreMode"]:checked')?.value || "merge";
+    }
+
+    function safeText(value, fallback, maxLength) {
+      const text = String(value ?? "").trim() || fallback;
+      return text.slice(0, maxLength);
+    }
+
+    function normalizeDimensionValue(value) {
+      return Number(Number(value).toFixed(1));
+    }
+
+    function normalizeImportedUserInput(item, usedTeeIds) {
+      const size = safeText(item.size, "?", 10);
+      const name = safeText(item.name, item.display_name || "Imported Tee", 50);
+      let teeId = item.tee_id;
+      while (usedTeeIds.has(teeId)) teeId = nextUserInputId();
+      usedTeeIds.add(teeId);
+
+      return withUserInputSchema({
+        tee_id: teeId,
+        source_kind: "user_input",
+        display_name: safeText(item.display_name, `${name} ${size}`, 80),
+        name,
+        brand: safeText(item.brand, "—", 30),
+        product_name: safeText(item.product_name, "—", 50),
+        size,
+        role: "user_input_temporary",
+        source_type: "user_input",
+        spec_type: "user_input_unverified",
+        status_badge: "未検証 / 一時的",
+        confidence_label: "user_input / not verified",
+        classification_badge: "user_input",
+        verification_status: "user_input_unverified",
+        source_label: "ユーザー入力",
+        dimensions: {
+          length_cm: normalizeDimensionValue(item.dimensions.length_cm),
+          width_cm: normalizeDimensionValue(item.dimensions.width_cm),
+          shoulder_cm: normalizeDimensionValue(item.dimensions.shoulder_cm),
+          sleeve_cm: normalizeDimensionValue(item.dimensions.sleeve_cm)
+        },
+        awa_comment: safeText(item.awa_comment, "", 300),
+        note: "ユーザー入力 / バックアップから復元 / verified ではありません"
+      });
+    }
+
+    function parseBackupItems(parsed) {
+      return Array.isArray(parsed?.items) ? parsed.items : [];
+    }
+
+    async function restoreBackupFromFile() {
+      const fileInput = $("backupRestoreFile");
+      const file = fileInput.files?.[0];
+      if (!file) {
+        setRestoreMessage("JSONファイルを指定してください。", "check");
+        return;
+      }
+
+      const mode = selectedRestoreMode();
+      if (mode === "replace" && state.userInputs.length > 0) {
+        const ok = window.confirm("現在の一覧を置き換えます。よろしいですか？");
+        if (!ok) return;
+      }
+
+      let items;
+      try {
+        const parsed = JSON.parse(await file.text());
+        items = parseBackupItems(parsed);
+      } catch (_) {
+        setRestoreMessage("JSONの形式を確認してください。", "check");
+        return;
+      }
+
+      const usedTeeIds = new Set(baseItems().map((item) => item.tee_id));
+      if (mode === "merge") {
+        state.userInputs.forEach((item) => usedTeeIds.add(item.tee_id));
+      }
+
+      const restored = [];
+      let rejected = 0;
+      items.forEach((item) => {
+        if (!validStoredUserInput(item)) {
+          rejected += 1;
+          return;
+        }
+        restored.push(normalizeImportedUserInput(item, usedTeeIds));
+      });
+
+      if (restored.length === 0) {
+        setRestoreMessage(`${rejected}件は形式が合わず読み込めませんでした。`, "check");
+        return;
+      }
+
+      state.userInputs = mode === "replace"
+        ? restored
+        : [...state.userInputs, ...restored];
+      state.compareKey = keyOf(restored[restored.length - 1]);
+      persistUserInputs();
+      renderControls();
+      render();
+      fileInput.value = "";
+      updateRestoreButtonState();
+      setRestoreMessage(`${restored.length}件を読み込みました。${rejected}件は形式が合わず読み込めませんでした。`, "notice");
+      setManualMessage("バックアップを読み戻しました。", "notice");
+    }
+
+    function setupSessionTeeList() {
+      if (state.sessionTeeListReady) return;
+      state.sessionTeeListReady = true;
+
+      $("backupRestoreFile").addEventListener("change", () => {
+        updateRestoreButtonState();
+        setRestoreMessage("読み戻し方法を選んでJSONを指定してください。");
+      });
+
+      $("restoreBackupButton").addEventListener("click", restoreBackupFromFile);
+
+      $("sessionClearButton").addEventListener("click", () => {
+        clearUserInputs();
+        setManualMessage("一覧を空にしました。", "notice");
+      });
+
+      $("localDataClearButton").addEventListener("click", () => {
+        const compareWasUserInput = isUserInput(itemByKey(state.compareKey));
+        clearAtlasLocalStorage();
+        state.userInputs = [];
+        if (compareWasUserInput) {
+          state.compareKey = fallbackCompareKey();
+        }
+        renderControls();
+        render();
+        setManualMessage("このブラウザの入力データを消しました。", "notice");
+        setPersistenceStatus("このブラウザの atlas_* 入力データを消しました。");
+      });
+
+      $("exportUserInputsButton").addEventListener("click", () => {
+        exportUserInputsJSON();
+        setManualMessage("バックアップ用JSONを書き出しました。", "notice");
+      });
+
+      $("sessionTeeList").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+
+        const action = button.dataset.action;
+        const key = button.dataset.key;
+
+        if (action === "compare") {
+          state.compareKey = key;
+          renderControls();
+          render();
+          setManualMessage("比較対象を切り替えました。", "notice");
+        }
+
+        if (action === "release") {
+          state.compareKey = fallbackCompareKey();
+          renderControls();
+          render();
+          setManualMessage("比較から外しました。", "notice");
+        }
+
+        if (action === "remove") {
+          removeUserInput(key);
+          setManualMessage("一覧から外しました。", "notice");
+        }
+      });
+    }
+
+    function clearUserInputs() {
+      const compareWasUserInput = isUserInput(itemByKey(state.compareKey));
+      state.userInputs = [];
+      if (compareWasUserInput) {
+        state.compareKey = fallbackCompareKey();
+      }
+      persistUserInputs();
+      renderControls();
+      render();
+    }
+
+    function removeUserInput(key) {
+      state.userInputs = state.userInputs.filter((item) => keyOf(item) !== key);
+      if (state.compareKey === key) {
+        state.compareKey = fallbackCompareKey();
+      }
+      persistUserInputs();
+      renderControls();
+      render();
+    }
+
+    function renderSessionTeeList() {
+      const container = $("sessionTeeList");
+      const clearButton = $("sessionClearButton");
+      const exportButton = $("exportUserInputsButton");
+      clearButton.disabled = state.userInputs.length === 0;
+      exportButton.disabled = state.userInputs.length === 0;
+      setPersistenceStatus(`${state.userInputs.length}件をこのブラウザに保存しています。このデバイスのみ・未同期です。`);
+
+      if (state.userInputs.length === 0) {
+        container.innerHTML = `<div class="session-tee-empty">まだ入力したTシャツはありません</div>`;
+        return;
+      }
+
+      container.innerHTML = state.userInputs.map((item) => {
+        const key = keyOf(item);
+        const selected = key === state.compareKey;
+        const dimensions = AXES.map(([axisKey, label]) => (
+          `<span class="dimension-chip">${label} ${cm(item.dimensions[axisKey])}cm</span>`
+        )).join("");
+        const compareButton = selected
+          ? `<button class="action-button small" type="button" data-action="release" data-key="${escapeHTML(key)}">比較から外す</button>`
+          : `<button class="action-button small primary" type="button" data-action="compare" data-key="${escapeHTML(key)}">比較に使う</button>`;
+
+        return `
+          <article class="session-tee-row" data-user-key="${escapeHTML(key)}">
+            <div class="session-tee-main">
+              <div>
+                <div class="session-tee-name">${escapeHTML(item.display_name)}</div>
+                <div class="session-tee-meta">${escapeHTML(`brand=${item.brand} / product=${item.product_name}`)}</div>
+              </div>
+              <div class="labels">
+                <span class="pill user-input">ユーザー入力</span>
+                <span class="pill user-input">未検証</span>
+              </div>
+              <div class="session-tee-dimensions">${dimensions}</div>
+            </div>
+            <div class="session-tee-actions">
+              ${compareButton}
+              <button class="action-button small" type="button" data-action="remove" data-key="${escapeHTML(key)}">一覧から外す</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function baseItems() {
+      return state.data.items || [];
+    }
+
+    function compareItems() {
+      return [...baseItems(), ...state.userInputs];
+    }
+
+    function itemByKey(key) {
+      return compareItems().find((item) => keyOf(item) === key);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function fallbackCompareKey() {
+      const fallback = baseItems().find((item) => keyOf(item) !== state.baselineKey);
+      return fallback ? keyOf(fallback) : state.baselineKey;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    const FRONT_FLAT_TEMPLATE = {
+      shoulderY: 0.048,
+      underArmY: 0.3,
+      hemInset: 0.01,
+      neck: {
+        widthFromShoulder: 0.31,
+        minFromBody: 0.21,
+        maxFromBody: 0.31,
+        depth: 0.052,
+        topOffset: 0.018,
+        ribWidthFromDepth: 0.24
+      },
+      shoulder: {
+        minFromBody: 0.74,
+        maxFromBody: 1.04
+      },
+      sleeve: {
+        lengthScale: 0.62,
+        minFromBody: 0.17,
+        maxFromBody: 0.27,
+        axisDropFromLength: 0.34,
+        openingFromLength: 0.48,
+        cuffSlantFromLength: 0.14,
+        underArmGapFromLength: 0.28
+      }
+    };
+
+    function getControlPointsForMeasurements(item, scale = 1) {
+      const d = item.dimensions;
+      const bodyW = d.width_cm * scale;
+      const bodyH = d.length_cm * scale;
+      const shoulderW = clamp(
+        d.shoulder_cm * scale,
+        bodyW * FRONT_FLAT_TEMPLATE.shoulder.minFromBody,
+        bodyW * FRONT_FLAT_TEMPLATE.shoulder.maxFromBody
+      );
+      const sleeveLength = clamp(
+        d.sleeve_cm * scale * FRONT_FLAT_TEMPLATE.sleeve.lengthScale,
+        bodyW * FRONT_FLAT_TEMPLATE.sleeve.minFromBody,
+        bodyW * FRONT_FLAT_TEMPLATE.sleeve.maxFromBody
+      );
+      const sleeveDrop = sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.axisDropFromLength;
+      const cuffSlant = clamp(sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.cuffSlantFromLength, 8, 16);
+      const drawnW = Math.max(bodyW, shoulderW + (sleeveLength + cuffSlant / 2) * 2);
+
+      return {
+        bodyW,
+        bodyH,
+        shoulderW,
+        sleeveLength,
+        sleeveDrop,
+        cuffSlant,
+        drawnW
+      };
+    }
+
+    function outlineMetrics(item, scale = 1) {
+      return getControlPointsForMeasurements(item, scale);
+    }
+
+    function buildFrontFlatTemplate(item, bounds) {
+      const d = item.dimensions;
+      if (!d.length_cm || !d.width_cm) return null;
+
+      const centerX = bounds.centerX;
+      const top = bounds.top;
+      const metrics = getControlPointsForMeasurements(item, bounds.scale);
+      const { bodyW, bodyH, shoulderW, sleeveLength, sleeveDrop, cuffSlant } = metrics;
+      const halfBody = bodyW / 2;
+      const halfShoulder = shoulderW / 2;
+      const leftBody = centerX - halfBody;
+      const rightBody = centerX + halfBody;
+      const bottom = top + bodyH;
+      const leftShoulder = centerX - halfShoulder;
+      const rightShoulder = centerX + halfShoulder;
+      const shoulderY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.shoulderY, 14, 22);
+      const sleeveOpening = clamp(
+        sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.openingFromLength,
+        bodyH * 0.075,
+        bodyH * 0.12
+      );
+      const sleeveCuffCenterY = shoulderY + sleeveDrop;
+      const underArmY = clamp(
+        sleeveCuffCenterY + sleeveOpening / 2 + sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.underArmGapFromLength,
+        top + bodyH * 0.22,
+        top + bodyH * 0.3
+      );
+      const neckW = clamp(
+        shoulderW * FRONT_FLAT_TEMPLATE.neck.widthFromShoulder,
+        bodyW * FRONT_FLAT_TEMPLATE.neck.minFromBody,
+        bodyW * FRONT_FLAT_TEMPLATE.neck.maxFromBody
+      );
+      const neckDepth = clamp(bodyH * FRONT_FLAT_TEMPLATE.neck.depth, 16, 25);
+      const ribWidth = clamp(neckDepth * FRONT_FLAT_TEMPLATE.neck.ribWidthFromDepth, 5, 9);
+      const neckTopY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.neck.topOffset, 4, 7);
+      const rightSleeveCuffCenterX = rightShoulder + sleeveLength;
+      const leftSleeveCuffCenterX = leftShoulder - sleeveLength;
+      const rightSleeveTop = rightSleeveCuffCenterX + cuffSlant / 2;
+      const rightSleeveBottom = rightSleeveCuffCenterX - cuffSlant / 2;
+      const leftSleeveTop = leftSleeveCuffCenterX - cuffSlant / 2;
+      const leftSleeveBottom = leftSleeveCuffCenterX + cuffSlant / 2;
+      const sleeveTopY = sleeveCuffCenterY - sleeveOpening / 2;
+      const sleeveBottomY = sleeveCuffCenterY + sleeveOpening / 2;
+      const hemInset = clamp(bodyW * FRONT_FLAT_TEMPLATE.hemInset, 3, 8);
+      const leftNeck = centerX - neckW / 2;
+      const rightNeck = centerX + neckW / 2;
+      const innerNeckW = neckW - ribWidth * 2.2;
+
+      return {
+        bodyW,
+        bodyH,
+        leftBody,
+        rightBody,
+        leftHem: leftBody + hemInset,
+        rightHem: rightBody - hemInset,
+        bottom,
+        shoulderY,
+        underArmY,
+        leftNeck,
+        rightNeck,
+        neckTopY,
+        neckMidY: neckTopY + neckDepth,
+        innerLeftNeck: centerX - innerNeckW / 2,
+        innerRightNeck: centerX + innerNeckW / 2,
+        innerNeckY: neckTopY + ribWidth * 0.72,
+        innerNeckMidY: neckTopY + neckDepth - ribWidth * 0.44,
+        leftShoulder,
+        rightShoulder,
+        leftSleeveCuffCenterX,
+        rightSleeveCuffCenterX,
+        sleeveCuffCenterY,
+        leftSleeveTop,
+        rightSleeveTop,
+        leftSleeveBottom,
+        rightSleeveBottom,
+        sleeveTopY,
+        sleeveBottomY,
+        sleeveLength,
+        cuffSlant,
+        neckW,
+        neckDepth,
+        ribWidth
+      };
+    }
+
+    function templatePoints(item, bounds) {
+      return buildFrontFlatTemplate(item, bounds);
+    }
+
+    function buildFrontFlatOutline(item, bounds) {
+      const p = buildFrontFlatTemplate(item, bounds);
+      if (!p) return "";
+
+      // Stage 1.6: page 1 front template uses a stable sleeve-under line;
+      // the armhole is shown as an internal technical stitch, not a deep outer cut.
+      return [
+        `M ${p.leftNeck} ${p.neckTopY}`,
+        `C ${p.leftNeck + p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck - p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck} ${p.neckTopY}`,
+        `L ${p.rightShoulder} ${p.shoulderY}`,
+        `L ${p.rightSleeveTop} ${p.sleeveTopY}`,
+        `L ${p.rightSleeveBottom} ${p.sleeveBottomY}`,
+        `L ${p.rightBody} ${p.underArmY}`,
+        `L ${p.rightHem} ${p.bottom}`,
+        `L ${p.leftHem} ${p.bottom}`,
+        `L ${p.leftBody} ${p.underArmY}`,
+        `L ${p.leftSleeveBottom} ${p.sleeveBottomY}`,
+        `L ${p.leftSleeveTop} ${p.sleeveTopY}`,
+        `L ${p.leftShoulder} ${p.shoulderY}`,
+        `L ${p.leftNeck} ${p.neckTopY}`,
+        "Z"
+      ].join(" ");
+    }
+
+    function createSvgElement(tag, attrs) {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          element.setAttribute(key, value);
+        }
+      });
+      return element;
+    }
+
+    function appendFrontFlatShirt(svg, item, bounds, style) {
+      const p = templatePoints(item, bounds);
+      if (!p) return;
+
+      const group = createSvgElement("g", {
+        "aria-label": `${style.name} front flat T-shirt outline`
+      });
+
+      const outer = createSvgElement("path", {
+        d: buildFrontFlatOutline(item, bounds),
+        fill: "none",
+        stroke: style.color,
+        "stroke-width": style.width,
+        "stroke-linejoin": "round",
+        "stroke-linecap": "round",
+        opacity: style.opacity,
+        "stroke-dasharray": style.dash
+      });
+      group.appendChild(outer);
+
+      // Crew neck rib: parallel U-curves make the neckline read as a ribbed T-shirt collar.
+      [
+        [p.leftNeck + p.ribWidth * 0.7, p.rightNeck - p.ribWidth * 0.7, p.neckTopY + p.ribWidth * 0.42, p.neckMidY - p.ribWidth * 0.36],
+        [p.innerLeftNeck, p.innerRightNeck, p.innerNeckY, p.innerNeckMidY]
+      ].forEach(([leftX, rightX, y, midY]) => {
+        const rib = createSvgElement("path", {
+          d: `M ${leftX} ${y} C ${leftX + p.neckW * 0.2} ${midY} ${rightX - p.neckW * 0.2} ${midY} ${rightX} ${y}`,
+          fill: "none",
+          stroke: style.color,
+          "stroke-width": Math.max(1, style.width * 0.62),
+          "stroke-linecap": "round",
+          opacity: style.detailOpacity,
+          "stroke-dasharray": style.dash
+        });
+        group.appendChild(rib);
+      });
+
+      drawTechnicalStitchGuide(group, p, style);
+      svg.appendChild(group);
+    }
+
+    function drawTechnicalStitchGuide(group, p, style) {
+      const stitchStyle = {
+        fill: "none",
+        stroke: style.color,
+        "stroke-width": Math.max(1, style.width * 0.42),
+        "stroke-linecap": "round",
+        opacity: style.detailOpacity * 0.58,
+        "stroke-dasharray": "3 4"
+      };
+
+      [
+        `M ${p.rightShoulder + p.bodyW * 0.01} ${p.shoulderY + 4} C ${p.rightShoulder + p.sleeveLength * 0.04} ${p.shoulderY + p.bodyH * 0.08} ${p.rightBody + p.bodyW * 0.024} ${p.underArmY - p.bodyH * 0.045} ${p.rightBody} ${p.underArmY}`,
+        `M ${p.leftShoulder - p.bodyW * 0.01} ${p.shoulderY + 4} C ${p.leftShoulder - p.sleeveLength * 0.04} ${p.shoulderY + p.bodyH * 0.08} ${p.leftBody - p.bodyW * 0.024} ${p.underArmY - p.bodyH * 0.045} ${p.leftBody} ${p.underArmY}`
+      ].forEach((d) => {
+        group.appendChild(createSvgElement("path", { d, ...stitchStyle }));
+      });
+
+      const hemY = p.bottom - Math.min(14, p.bodyH * 0.035);
+      const hem = createSvgElement("line", {
+        x1: p.leftHem,
+        y1: hemY,
+        x2: p.rightHem,
+        y2: hemY,
+        stroke: style.color,
+        "stroke-width": Math.max(1, style.width * 0.48),
+        opacity: style.detailOpacity * 0.72,
+        "stroke-dasharray": style.name === "baseline" ? "3 4" : style.dash
+      });
+      group.appendChild(hem);
+
+      [
+        [p.rightSleeveTop, p.sleeveTopY, p.rightSleeveBottom, p.sleeveBottomY],
+        [p.leftSleeveTop, p.sleeveTopY, p.leftSleeveBottom, p.sleeveBottomY]
+      ].forEach(([x1, y1, x2, y2]) => {
+        const sleeveHem = createSvgElement("line", {
+          x1,
+          y1,
+          x2,
+          y2,
+          stroke: style.color,
+          "stroke-width": Math.max(1, style.width * 0.48),
+          opacity: style.detailOpacity * 0.72,
+          "stroke-dasharray": style.name === "baseline" ? "3 4" : style.dash
+        });
+        group.appendChild(sleeveHem);
+      });
+    }
+
+	    function measurementGuideAnchors(p) {
+	      const centerX = (p.leftBody + p.rightBody) / 2;
+	      const lengthX = p.leftBody - 16;
+	      const labelPad = 18;
+	      return {
+	        shoulder: {
+	          start: { x: p.leftShoulder, y: p.shoulderY },
+	          end: { x: p.rightShoulder, y: p.shoulderY },
+	          label: { x: centerX, y: Math.max(32, p.neckTopY - 24), anchor: "middle" }
+	        },
+	        width: {
+	          start: { x: p.leftBody, y: p.underArmY },
+	          end: { x: p.rightBody, y: p.underArmY },
+	          label: {
+	            x: clamp(p.rightBody + 22, labelPad, 706),
+	            y: p.underArmY - 4,
+	            anchor: p.rightBody > 610 ? "end" : "start"
+	          }
+	        },
+	        length: {
+	          start: { x: lengthX, y: p.neckTopY },
+	          end: { x: lengthX, y: p.bottom },
+	          label: { x: clamp(lengthX - 10, labelPad, 706), y: p.neckTopY + p.bodyH * 0.52, anchor: lengthX < 86 ? "start" : "end" }
+	        },
+	        sleeve: {
+	          start: { x: p.rightShoulder, y: p.shoulderY },
+          end: {
+            x: p.rightSleeveCuffCenterX,
+            y: p.sleeveCuffCenterY
+	          },
+	          label: {
+	            x: clamp(p.rightSleeveCuffCenterX + 20, labelPad, 706),
+	            y: p.sleeveCuffCenterY - 5,
+	            anchor: p.rightSleeveCuffCenterX > 646 ? "end" : "start"
+	          }
+	        }
+	      };
+    }
+
+    function drawMeasurementLine(group, start, end, style) {
+      group.appendChild(createSvgElement("line", {
+        x1: start.x,
+        y1: start.y,
+        x2: end.x,
+        y2: end.y,
+        stroke: style.color,
+        "stroke-width": style.width,
+        "stroke-dasharray": style.dash,
+        "stroke-linecap": "round",
+        opacity: style.opacity
+      }));
+    }
+
+    function drawMeasurementMarkers(group, points, style) {
+      points.forEach((point) => {
+        if (style.halo) {
+          group.appendChild(createSvgElement("circle", {
+            cx: point.x,
+            cy: point.y,
+            r: style.radius + 2.2,
+            fill: "#fffefa",
+            stroke: style.color,
+            "stroke-width": 0.8,
+            opacity: 0.72
+          }));
+        }
+        group.appendChild(createSvgElement("circle", {
+          cx: point.x,
+          cy: point.y,
+          r: style.radius,
+          fill: style.color,
+          opacity: style.pointOpacity
+        }));
+      });
+    }
+
+    function drawMeasurementLabel(group, label, mainText, subText) {
+      const text = createSvgElement("text", {
+        x: label.x,
+        y: label.y,
+	        "text-anchor": label.anchor,
+	        fill: "#365c61",
+	        "font-size": "17",
+	        "font-weight": "700",
+	        opacity: 0.9
+	      });
+      const main = createSvgElement("tspan", { x: label.x, dy: 0 });
+      main.textContent = mainText;
+      const sub = createSvgElement("tspan", {
+	        x: label.x,
+	        dy: 18,
+	        fill: "#6f716a",
+	        "font-size": "15",
+	        "font-weight": "500"
+	      });
+      sub.textContent = subText;
+      text.appendChild(main);
+      text.appendChild(sub);
+      group.appendChild(text);
+    }
+
+    function compactTeeLabel(item) {
+      return compactTeeLabels[item.tee_id] || item.display_name;
+    }
+
+    function drawMeasurementGuideForItem(group, item, p, style, showLabels) {
+      const anchors = measurementGuideAnchors(p);
+      const guides = [
+        ["shoulder", "肩幅", "肩先〜肩先", "shoulder_cm"],
+        ["width", "身幅", "脇下〜脇下", "width_cm"],
+        ["length", "着丈", "首元〜裾", "length_cm"],
+        ["sleeve", "袖丈", "肩先〜袖口", "sleeve_cm"]
+      ];
+
+      guides.forEach(([key, label, subLabel, axisKey]) => {
+        const guide = anchors[key];
+        drawMeasurementLine(group, guide.start, guide.end, style);
+        drawMeasurementMarkers(group, [guide.start, guide.end], style);
+        if (showLabels) {
+          drawMeasurementLabel(
+            group,
+            guide.label,
+            label,
+            `${cm(item.dimensions[axisKey])}cm`
+          );
+        }
+      });
+    }
+
+    function drawMeasurementGuide(svg, _baseline, compared, bounds) {
+      const comparedPoints = templatePoints(compared, bounds);
+      if (!comparedPoints) return;
+
+      const group = createSvgElement("g", {
+        "aria-label": "measurement guide overlay for compared item"
+      });
+
+      const guideCaption = createSvgElement("text", {
+        x: 30,
+        y: 54,
+        fill: "#126a7a",
+        "font-size": "13",
+        "font-weight": "700"
+      });
+      guideCaption.textContent = "採寸ガイド：比較対象（破線）の寸法";
+      group.appendChild(guideCaption);
+
+      drawMeasurementGuideForItem(group, compared, comparedPoints, {
+        color: "#2f7c88",
+        width: 1,
+        dash: "4 5",
+        opacity: 0.4,
+        radius: 2.5,
+        pointOpacity: 0.56,
+        halo: true
+      }, true);
+
+      svg.appendChild(group);
+    }
+
+    function appendScaleGrid(svg, bounds) {
+      const spacing = bounds.scale * 5;
+      const group = createSvgElement("g", {
+        "aria-label": "actual-size guide grid"
+      });
+
+      for (let x = bounds.centerX; x <= 720; x += spacing) {
+        group.appendChild(createSvgElement("line", {
+          x1: x,
+          y1: 26,
+          x2: x,
+          y2: 520,
+          stroke: "rgba(34,35,31,0.055)",
+          "stroke-width": "1"
+        }));
+      }
+      for (let x = bounds.centerX - spacing; x >= 0; x -= spacing) {
+        group.appendChild(createSvgElement("line", {
+          x1: x,
+          y1: 26,
+          x2: x,
+          y2: 520,
+          stroke: "rgba(34,35,31,0.055)",
+          "stroke-width": "1"
+        }));
+      }
+      for (let y = bounds.top; y <= 520; y += spacing) {
+        group.appendChild(createSvgElement("line", {
+          x1: 22,
+          y1: y,
+          x2: 698,
+          y2: y,
+          stroke: "rgba(34,35,31,0.055)",
+          "stroke-width": "1"
+        }));
+      }
+      for (let y = bounds.top - spacing; y >= 26; y -= spacing) {
+        group.appendChild(createSvgElement("line", {
+          x1: 22,
+          y1: y,
+          x2: 698,
+          y2: y,
+          stroke: "rgba(34,35,31,0.055)",
+          "stroke-width": "1"
+        }));
+      }
+
+      const label = createSvgElement("text", {
+        x: 30,
+        y: 36,
+        fill: "#8b8e89",
+        "font-size": "11"
+      });
+      label.textContent = "実寸グリッド / 1マス = 5cm";
+      group.appendChild(label);
+      svg.appendChild(group);
+    }
+
+    function drawOutlines(baseline, compared) {
+      const svg = $("outlineSvg");
+      svg.innerHTML = "";
+
+      const maxWidth = Math.max(
+        outlineMetrics(baseline).drawnW,
+        outlineMetrics(compared).drawnW
+      );
+      const maxLength = Math.max(baseline.dimensions.length_cm, compared.dimensions.length_cm);
+	      const bounds = {
+	        centerX: 360,
+	        top: 54,
+	        scale: Math.min(720 / maxWidth, 445 / maxLength)
+	      };
+
+	      appendScaleGrid(svg, bounds);
+
+	      const center = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	      center.setAttribute("x1", bounds.centerX);
+	      center.setAttribute("x2", bounds.centerX);
+	      center.setAttribute("y1", 34);
+	      center.setAttribute("y2", 478);
+	      center.setAttribute("stroke", "rgba(34,35,31,0.16)");
+	      center.setAttribute("stroke-dasharray", "4 8");
+	      svg.appendChild(center);
+
+      appendFrontFlatShirt(svg, baseline, bounds, {
+        name: "baseline",
+        color: "#8b8e89",
+        dash: "",
+        width: 1.8,
+        opacity: 0.78,
+        detailOpacity: 0.56
+      });
+
+      appendFrontFlatShirt(svg, compared, bounds, {
+        name: "compared",
+        color: "#126a7a",
+        dash: "7 6",
+        width: 2.4,
+        opacity: 0.95,
+        detailOpacity: 0.72
+      });
+
+      if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", 360);
+      label.setAttribute("y", 540);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", "#6f716a");
+      label.setAttribute("font-size", "12");
+      label.textContent = "2枚を同じ縮尺で重ねています（大きさの差 = 寸法差）";
+      svg.appendChild(label);
+
+      $("scaleHint").textContent = "前面フラット図のみ表示。2枚を同じ縮尺で重ねています。グリッドは実寸目安として 1マス = 5cm です。";
+      $("modeCaution").textContent = "図は比較理解のための概略表示です。";
+    }
+
+    function appendHumanSilhouette(svg, bounds, compared) {
+      // シャツの template points を使い、ボディをシャツ寸法にリンクする。
+      // 全パーツが共有頂点で接続（首→鎖骨→胴体、胴体肩角→腕、胴体腰角→脚）。
+      const p = buildFrontFlatTemplate(compared, bounds);
+      if (!p) return;
+
+      const cx = bounds.centerX;
+      const s = {
+        fill: "#edecea",
+        stroke: "#b0afa8",
+        "stroke-width": "1.5",
+        "stroke-linejoin": "round",
+        "stroke-linecap": "round",
+        opacity: "0.72"
+      };
+
+      // シャツ肩シームY・ボディ肩幅（シャツ肩幅の 90%）
+      const shldrY = p.shoulderY;
+      const halfShldr = (p.rightShoulder - p.leftShoulder) / 2 * 0.90;
+      const BL = cx - halfShldr;   // ボディ左肩外端 x
+      const BR = cx + halfShldr;   // ボディ右肩外端 x
+
+      // 首（シャツ上部・固定比率）
+      const neckHW = 8;
+      const neckTopY = 75;
+      const neckBotY = 98;
+
+      // 胴体（シャツ着丈を基準に比例計算）
+      const bodyLenPx = compared.dimensions.length_cm * bounds.scale;
+      const torsoH = bodyLenPx * 0.88;
+      const hipY = shldrY + torsoH;
+      const waistY = shldrY + torsoH * 0.58;
+      const waistHW = halfShldr * 0.84;
+      const hipHW = halfShldr * 0.78;
+
+      // 腕（半袖Tシャツ = 腕先はシャツ袖先止まり / 袖方向に合わせ水平寄り）
+      const armDx = p.sleeveLength;
+      const armDy = p.sleeveLength * 0.08;   // ほぼ水平（シャツ袖軸に近い角度）
+      const armW1 = 13;   // 肩端 半幅
+      const armW2 = 8;    // 手首 半幅
+
+      // 脚
+      const legGap = 5;
+      const legTopW = hipHW - legGap;
+      const legBotW = legTopW * 0.70;
+      const legTaper = legTopW - legBotW;
+      const ankleY = Math.min(hipY + bodyLenPx * 0.95, 520);
+
+      const r = (n) => Math.round(n * 10) / 10;  // 小数1桁
+
+      [
+        // 頭
+        createSvgElement("ellipse", { cx, cy: 52, rx: 20, ry: 24, ...s }),
+
+        // 首（矩形）
+        createSvgElement("path", {
+          d: `M ${cx - neckHW} ${neckTopY} L ${cx + neckHW} ${neckTopY} L ${cx + neckHW} ${neckBotY} L ${cx - neckHW} ${neckBotY} Z`,
+          ...s
+        }),
+
+        // 鎖骨（台形）: 首下端 → 肩レベル を隙間なく接続
+        createSvgElement("path", {
+          d: `M ${cx - neckHW} ${neckBotY} L ${cx + neckHW} ${neckBotY} L ${r(BR)} ${r(shldrY)} L ${r(BL)} ${r(shldrY)} Z`,
+          ...s
+        }),
+
+        // 胴体: 肩 → ウエスト → 腰（鎖骨・腕と頂点を共有）
+        createSvgElement("path", {
+          d: `M ${r(BL)} ${r(shldrY)} L ${r(BR)} ${r(shldrY)} L ${r(cx + waistHW)} ${r(waistY)} L ${r(cx + hipHW)} ${r(hipY)} L ${r(cx - hipHW)} ${r(hipY)} L ${r(cx - waistHW)} ${r(waistY)} Z`,
+          ...s
+        }),
+
+        // 右腕: 肩コーナー (BR, shldrY) を共有して外側へ伸びる
+        createSvgElement("path", {
+          d: `M ${r(BR)} ${r(shldrY - armW1)} L ${r(BR + armDx)} ${r(shldrY + armDy - armW2)} L ${r(BR + armDx)} ${r(shldrY + armDy + armW2)} L ${r(BR)} ${r(shldrY + armW1)} Z`,
+          ...s
+        }),
+
+        // 左腕（右腕の鏡像）
+        createSvgElement("path", {
+          d: `M ${r(BL)} ${r(shldrY - armW1)} L ${r(BL - armDx)} ${r(shldrY + armDy - armW2)} L ${r(BL - armDx)} ${r(shldrY + armDy + armW2)} L ${r(BL)} ${r(shldrY + armW1)} Z`,
+          ...s
+        }),
+
+        // 右脚: 外上端 (cx+hipHW, hipY) = 胴体腰コーナー
+        createSvgElement("path", {
+          d: `M ${r(cx + legGap)} ${r(hipY)} L ${r(cx + hipHW)} ${r(hipY)} L ${r(cx + hipHW - legTaper)} ${r(ankleY)} L ${r(cx + legGap)} ${r(ankleY)} Z`,
+          ...s
+        }),
+
+        // 左脚: 外上端 (cx-hipHW, hipY) = 胴体腰コーナー
+        createSvgElement("path", {
+          d: `M ${r(cx - hipHW)} ${r(hipY)} L ${r(cx - legGap)} ${r(hipY)} L ${r(cx - legGap)} ${r(ankleY)} L ${r(cx - hipHW + legTaper)} ${r(ankleY)} Z`,
+          ...s
+        }),
+
+        // へそ
+        createSvgElement("circle", { cx, cy: r(shldrY + torsoH * 0.28), r: 3, fill: "#b0afa8", stroke: "none", opacity: "0.65" })
+      ].forEach(el => svg.appendChild(el));
+    }
+
+    function diffSentence(axisKey, value) {
+      const abs = Math.abs(value);
+      if (abs <= 0.7) return `${axisName(axisKey)}差は小さい`;
+      const phrases = {
+        length_cm: value > 0 ? "着丈は基準より長い" : "着丈は基準より短い",
+        width_cm: value > 0 ? "身幅は基準より広い" : "身幅は基準より締まる",
+        shoulder_cm: value > 0 ? "肩幅は基準より広い" : "肩幅は基準より狭い",
+        sleeve_cm: value > 0 ? "袖丈は基準より長い" : "袖丈は基準より短い"
+      };
+      return phrases[axisKey];
+    }
+
+    function axisName(axisKey) {
+      return AXES.find(([key]) => key === axisKey)?.[1] || axisKey;
+    }
+
+    function appendCallout(svg, callout) {
+      const { x, y, w, h, targetX, targetY, axisKey, value } = callout;
+      const edgeX = x < targetX ? x + w : x;
+      const edgeY = y + h / 2;
+      const group = createSvgElement("g", {});
+
+      group.appendChild(createSvgElement("path", {
+        d: `M ${targetX} ${targetY} L ${edgeX} ${edgeY}`,
+        fill: "none",
+        stroke: "#9b9d98",
+        "stroke-width": "1.2",
+        "stroke-dasharray": "3 4",
+        "stroke-linecap": "round"
+      }));
+
+      group.appendChild(createSvgElement("circle", {
+        cx: targetX,
+        cy: targetY,
+        r: 4,
+        fill: "#8b8e89"
+      }));
+
+      group.appendChild(createSvgElement("rect", {
+        x,
+        y,
+        width: w,
+        height: h,
+        rx: 8,
+        fill: "#ffffff",
+        stroke: "#cfd1cc",
+        "stroke-width": "1.2"
+      }));
+
+      const text = createSvgElement("text", {
+        x: x + 12,
+        y: y + 21,
+        fill: "#22231f",
+        "font-size": "13.5",
+        "font-weight": "700"
+      });
+      const line1 = createSvgElement("tspan", { x: x + 12, dy: 0 });
+      line1.textContent = `${axisName(axisKey)}: ${sign(value)}${cm(value)}cm`;
+      const line2 = createSvgElement("tspan", { x: x + 12, dy: 19, fill: "#6f716a", "font-weight": "500" });
+      line2.textContent = diffSentence(axisKey, value);
+      text.appendChild(line1);
+      text.appendChild(line2);
+      group.appendChild(text);
+      svg.appendChild(group);
+    }
+
+    function drawFittingImage(baseline, compared, diffs) {
+      const svg = $("outlineSvg");
+      svg.innerHTML = "";
+
+      const maxWidth = Math.max(outlineMetrics(baseline).drawnW, outlineMetrics(compared).drawnW);
+      const maxLength = Math.max(baseline.dimensions.length_cm, compared.dimensions.length_cm);
+      const bounds = {
+        centerX: 360,
+        top: 142,
+        // 比較モードと同じ水平スケール(720/maxWidth)、縦は top=142 分だけ詰める(530-142=388)
+        scale: Math.min(720 / maxWidth, 388 / maxLength)
+      };
+
+      appendScaleGrid(svg, bounds);
+      appendHumanSilhouette(svg, bounds, compared);
+
+      appendFrontFlatShirt(svg, baseline, bounds, {
+        name: "baseline",
+        color: "#b3b5b0",
+        dash: "",
+        width: 1.5,
+        opacity: 0.5,
+        detailOpacity: 0.32
+      });
+
+      appendFrontFlatShirt(svg, compared, bounds, {
+        name: "compared",
+        color: "#126a7a",
+        dash: "",
+        width: 2.6,
+        opacity: 0.9,
+        detailOpacity: 0.58
+      });
+
+      const p = templatePoints(compared, bounds);
+      // 吹き出しボックス位置はシャツ template points に追従（スケール変化に対応）
+      const sBox = { w: 178, h: 58 };
+      const leftX = 48;
+      const rightX = 494;
+      const shoulderBoxY = Math.max(p.shoulderY - sBox.h - 10, 56);
+      const widthBoxY   = Math.round(p.underArmY - sBox.h / 2);
+      const sleeveBoxY  = Math.max(p.sleeveCuffCenterY - sBox.h / 2, shoulderBoxY + sBox.h + 8);
+      const lengthBoxY  = Math.min(p.bottom - sBox.h - 8, 480);
+      const callouts = [
+        { x: leftX,  y: shoulderBoxY, ...sBox, targetX: p.rightShoulder,        targetY: p.shoulderY,           axisKey: "shoulder_cm", value: diffs.shoulder_cm },
+        { x: rightX, y: widthBoxY,    ...sBox, targetX: p.rightBody,             targetY: p.underArmY - 10,      axisKey: "width_cm",    value: diffs.width_cm },
+        { x: leftX,  y: sleeveBoxY,   ...sBox, targetX: p.leftSleeveCuffCenterX, targetY: p.sleeveCuffCenterY,   axisKey: "sleeve_cm",   value: diffs.sleeve_cm },
+        { x: rightX, y: lengthBoxY,   ...sBox, targetX: 360,                     targetY: p.bottom,              axisKey: "length_cm",   value: diffs.length_cm }
+      ];
+      callouts.forEach((callout) => appendCallout(svg, callout));
+
+      const label = createSvgElement("text", {
+        x: 360,
+        y: 540,
+        "text-anchor": "middle",
+        fill: "#6f716a",
+        "font-size": "12"
+      });
+      label.textContent = "同じ縮尺で基準Tとの差分を表示しています";
+      svg.appendChild(label);
+
+      $("scaleHint").textContent = "着用差分はモデュロール風の棒人間ガイド上の比較表示です。グリッドは実寸目安として 1マス = 5cm です。";
+      $("modeCaution").textContent = "この表示は基準Tとの差分を理解するための簡易ガイドであり、正確な着用シミュレーションではありません。 This view is a simplified guide for understanding fit differences, not a precise fitting simulation.";
+    }
+
+    function difference(baseline, compared) {
+      return Object.fromEntries(
+        AXES.map(([key]) => [key, compared.dimensions[key] - baseline.dimensions[key]])
+      );
+    }
+
+    function diffCaption(axisKey, value) {
+      const abs = Math.abs(value);
+      if (abs <= 0.7) return "近い";
+      if (abs >= 2.0) return "遠い";
+      if (axisKey === "width_cm") return value > 0 ? "広い" : "細い";
+      if (axisKey === "length_cm") return value > 0 ? "長い" : "短い";
+      return value > 0 ? "大きめ" : "小さめ";
+    }
+
+    function axisDirection(axisKey, value) {
+      if (Math.abs(value) <= 0.7) return "近い";
+      const words = {
+        length_cm: value > 0 ? "長い" : "短い",
+        width_cm: value > 0 ? "広い" : "細い",
+        shoulder_cm: value > 0 ? "広い" : "狭い",
+        sleeve_cm: value > 0 ? "長い" : "短い"
+      };
+      return words[axisKey];
+    }
+
+    function summaryLabels(diffs) {
+      const labels = [];
+      AXES.forEach(([key, label]) => {
+        if (Math.abs(diffs[key]) <= 0.7) labels.push(`${label}は近い`);
+      });
+      if (AXES.every(([key]) => Math.abs(diffs[key]) <= 0.7)) labels.push("全軸とも近い");
+      if (diffs.width_cm < -1.5) labels.push("身幅が細い");
+      if (diffs.width_cm > 1.5) labels.push("身幅が広い");
+      if (diffs.length_cm > 2.0) labels.push("着丈が長い");
+      if (diffs.length_cm < -2.0) labels.push("着丈が短い");
+      if (diffs.shoulder_cm < -1.5) labels.push("肩幅が狭い");
+      if (diffs.shoulder_cm > 1.5) labels.push("肩幅が広い");
+      if (Math.abs(diffs.sleeve_cm) <= 0.7) labels.push("袖丈は近い");
+      return labels.length ? labels : ["差分小さめ"];
+    }
+
+    function renderMetrics(diffs) {
+      $("metricGrid").innerHTML = AXES.map(([key, label]) => {
+        const value = diffs[key];
+        return `
+          <article class="metric">
+            <div class="metric-name">${label}</div>
+            <div class="metric-value">${sign(value)}${cm(value)} cm</div>
+            <div class="metric-caption">${axisDirection(key, value)} / ${diffCaption(key, value)}</div>
+          </article>
+        `;
+      }).join("");
+
+      $("summaryLabels").innerHTML = summaryLabels(diffs)
+        .map((label) => `<span class="pill">${label}</span>`)
+        .join("");
+    }
+
+    function renderMemo(baseline, compared) {
+      $("memoGrid").innerHTML = [baseline, compared].map((item) => `
+        <div class="memo-item">
+          <strong>${escapeHTML(labelOf(item))}</strong>
+          <p>${escapeHTML(item.awa_comment || (isUserInput(item) ? "実着メモなし（ユーザー入力）" : "実着メモなし"))}</p>
+          ${isUserInput(item) ? `<p>${escapeHTML(`補足: brand=${item.brand} / product=${item.product_name}`)}</p>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function renderBadges(baseline, compared) {
+      const badgeItems = [
+        ["source", `baseline: ${baseline.source_label}`, baseline],
+        ["status", baseline.status_badge, baseline],
+        ["classification", baseline.classification_badge, baseline],
+        ["source", `compared: ${compared.source_label}`, compared],
+        ["status", compared.status_badge, compared],
+        ["classification", compared.classification_badge, compared]
+      ];
+
+      $("badges").innerHTML = badgeItems
+        .map(([kind, text, item]) => {
+          const renderedText = kind === "classification" ? classificationLabels[text] || text : text;
+          const className = isUserInput(item) ? "user-input" : kind;
+          return `<span class="pill ${className}">${escapeHTML(renderedText)}</span>`;
+        })
+        .join("");
+
+      const comparedMeta = isUserInput(compared)
+        ? `<div><strong>入力補足</strong>: brand=${escapeHTML(compared.brand)} / product=${escapeHTML(compared.product_name)}</div>`
+        : "";
+      const comparedNote = isUserInput(compared)
+        ? "ユーザー入力 / このブラウザ内の比較用 / verified ではありません"
+        : compared.note;
+
+      $("sourceLines").innerHTML = `
+        <div><strong>${escapeHTML(labelOf(baseline))}</strong>: ${escapeHTML(baseline.spec_type)} / ${escapeHTML(baseline.confidence_label)}</div>
+        <div><strong>${escapeHTML(labelOf(compared))}</strong>: ${escapeHTML(compared.spec_type)} / ${escapeHTML(compared.confidence_label)}</div>
+        ${comparedMeta}
+        <div><strong>note</strong>: ${escapeHTML(comparedNote)}</div>
+      `;
+    }
+
+    function appendUserInputCaution(compared) {
+      if (!isUserInput(compared)) return;
+      const label = labelOf(compared);
+      $("modeCaution").textContent = `${$("modeCaution").textContent} 比較対象の ${label} はユーザー入力です。verified data ではなく、このセッションだけで扱います。ページを閉じると消えます。`;
+    }
+
+    function render() {
+      const baseline = itemByKey(state.baselineKey);
+      const compared = itemByKey(state.compareKey);
+      if (!baseline || !compared) return;
+
+      $("pairTitle").textContent = `${labelOf(baseline)} vs ${labelOf(compared)}`;
+      updateMeasurementGuideControl();
+      const diffs = difference(baseline, compared);
+      if (state.mode === "fit") {
+        $("legend").dataset.mode = "fit";
+        $("modeDescription").textContent = "モデュロール風の棒人間に比較Tを重ね、基準Tとの差分を吹き出しで表示しています。";
+        drawFittingImage(baseline, compared, diffs);
+      } else {
+        $("legend").dataset.mode = "compare";
+        $("modeDescription").textContent = "front flat technical style の前面図に、着丈・身幅・肩幅・袖丈の差分を重ねています。";
+        drawOutlines(baseline, compared);
+      }
+      appendUserInputCaution(compared);
+      renderMetrics(diffs);
+      renderMemo(baseline, compared);
+      renderBadges(baseline, compared);
+      renderSessionTeeList();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

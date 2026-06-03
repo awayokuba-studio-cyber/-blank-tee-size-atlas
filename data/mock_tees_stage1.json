@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "project": "Blank Tee Size Atlas",
+    "stage": "visual_difference_stage1",
+    "created_at": "2026-05-24",
+    "scope": "static mock data for everyone / CRC / Pro Club only",
+    "baseline_default": "everyone_3p_ss:L",
+    "baseline_options": [
+      "everyone_3p_ss:L",
+      "crc_ss_tubular_ss:L"
+    ],
+    "notes": [
+      "Stage 1 prototype data only.",
+      "Production CSV, source_log, and anchor_dimension_status are not updated by this file.",
+      "Pro Club values are staging seller observation, not official source."
+    ]
+  },
+  "items": [
+    {
+      "tee_id": "everyone_3p_ss",
+      "display_name": "everyone 3P tee shirts BLACK",
+      "brand": "everyone",
+      "product_name": "3P tee shirts BLACK",
+      "size": "L",
+      "role": "current_data_anchor",
+      "source_type": "official_current",
+      "spec_type": "official_current",
+      "status_badge": "current data anchor",
+      "confidence_label": "official source / partial verified",
+      "classification_badge": "anchor",
+      "verification_status": "anchor_dimension_status pending_verification",
+      "source_label": "official current",
+      "dimensions": {
+        "length_cm": 68.5,
+        "width_cm": 64.0,
+        "shoulder_cm": 54.0,
+        "sleeve_cm": 24.5
+      },
+      "note": "現在の比較基準。anchor_dimension_status は pending_verification のまま。",
+      "awa_comment": "アンカー T。実着判断としてオンオフともに現状ベスト。ロゴ・装飾なしの黒無地で成立。バインダーネックの安定感が首元のだらしなさを防いでいる。"
+    },
+    {
+      "tee_id": "crc_ss_tubular_ss",
+      "display_name": "CRC SS TUBULAR T-SHIRT",
+      "brand": "CRC",
+      "product_name": "SS TUBULAR T-SHIRT",
+      "size": "L",
+      "role": "essential_candidate",
+      "source_type": "awa_measured",
+      "spec_type": "awa_measured_prewash",
+      "status_badge": "essential candidate / prewash",
+      "confidence_label": "high for owned item measurement",
+      "classification_badge": "observation target",
+      "verification_status": "measured_by_awa_prewash",
+      "source_label": "awa measured",
+      "dimensions": {
+        "length_cm": 74.0,
+        "width_cm": 56.0,
+        "shoulder_cm": 55.0,
+        "sleeve_cm": 24.0
+      },
+      "note": "0回洗濯前のawa実測。Pro Clubに近い観察対象。身幅は少し狭い。",
+      "awa_comment": "首元は詰まりすぎず良い。アメリカコットンのハリ感があり、丸胴の肌触りが良い。CROSS & STITCH 8ozより軽く、ちょうどいい。everyoneより身幅は締まっているが悪くない。全体的にはPro Clubに近い。着丈はPro Clubより短く着やすい印象。ただし身幅は少し狭い。"
+    },
+    {
+      "tee_id": "proclub_heavyweight_ss",
+      "display_name": "Pro Club Heavyweight",
+      "brand": "Pro Club",
+      "product_name": "Heavyweight",
+      "size": "L",
+      "role": "seller_actual_reference",
+      "source_type": "seller_measured",
+      "spec_type": "seller_measured_unverified",
+      "status_badge": "staging / partial_triggered_style_no_pending",
+      "confidence_label": "low / pending official source",
+      "classification_badge": "near anchor candidate",
+      "verification_status": "pending_official_source",
+      "source_label": "retailer observation",
+      "dimensions": {
+        "length_cm": 76.0,
+        "width_cm": 56.0,
+        "shoulder_cm": 50.0,
+        "sleeve_cm": 23.0
+      },
+      "note": "第三者リテーラー記載値。公式 Pro Club source ではなく staging 由来として扱う。",
+      "awa_comment": "着用感として文句ない。首元は程よく詰まっている。everyone より身幅は細い印象。生地は everyone よりシャリ感があり、アメリカコットン由来のラフさがある。"
+    }
+  ]
+}
