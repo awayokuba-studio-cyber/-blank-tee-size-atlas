@@ -2367,10 +2367,10 @@
       $("modeCaution").textContent = "図は比較理解のための概略表示です。";
     }
 
-    function appendHumanSilhouette(svg, bounds, compared) {
-      // シャツの template points を使い、ボディをシャツ寸法にリンクする。
-      // 全パーツが共有頂点で接続（首→鎖骨→胴体、胴体肩角→腕、胴体腰角→脚）。
-      const p = buildFrontFlatTemplate(compared, bounds);
+    function appendHumanSilhouette(svg, bounds, baseline) {
+      // ボディは baseline（awa実測）固定。比較対象を変えてもシルエットは動かない。
+      // 胴体幅は shirt body width ベース → シャツが体の外側を包む形になる。
+      const p = buildFrontFlatTemplate(baseline, bounds);
       if (!p) return;
 
       const cx = bounds.centerX;
@@ -2383,30 +2383,38 @@
         opacity: "0.72"
       };
 
-      // シャツ肩シームY・ボディ肩幅（シャツ肩幅の 90%）
+      // 肩シームY（baseline に固定）
       const shldrY = p.shoulderY;
-      const halfShldr = (p.rightShoulder - p.leftShoulder) / 2 * 0.90;
-      const BL = cx - halfShldr;   // ボディ左肩外端 x
-      const BR = cx + halfShldr;   // ボディ右肩外端 x
 
-      // 首（シャツ上部・固定比率）
+      // ボディ肩幅: shirt shoulder × 88%（シャツ肩縫い目の内側に収まる）
+      const halfShldr = (p.rightShoulder - p.leftShoulder) / 2 * 0.88;
+      const BL = cx - halfShldr;
+      const BR = cx + halfShldr;
+
+      // 胴体幅: shirt body width × 88%（身幅ベース / 肩幅より広い体型も正確に）
+      const bodyHalfW = p.bodyW / 2 * 0.88;
+
+      // 首
       const neckHW = 8;
       const neckTopY = 75;
       const neckBotY = 98;
 
-      // 胴体（シャツ着丈を基準に比例計算）
-      const bodyLenPx = compared.dimensions.length_cm * bounds.scale;
+      // 胸（首下端 → 肩レベル への細い台形 / 最大 ±30px に抑える）
+      const chestHW = 30;
+
+      // 胴体
+      const bodyLenPx = baseline.dimensions.length_cm * bounds.scale;
       const torsoH = bodyLenPx * 0.88;
       const hipY = shldrY + torsoH;
       const waistY = shldrY + torsoH * 0.58;
-      const waistHW = halfShldr * 0.84;
-      const hipHW = halfShldr * 0.78;
+      const waistHW = bodyHalfW * 0.86;
+      const hipHW = bodyHalfW * 0.82;
 
-      // 腕（半袖Tシャツ = 腕先はシャツ袖先止まり / 袖方向に合わせ水平寄り）
+      // 腕（baseline 袖丈に追従 / ほぼ水平）
       const armDx = p.sleeveLength;
-      const armDy = p.sleeveLength * 0.08;   // ほぼ水平（シャツ袖軸に近い角度）
-      const armW1 = 13;   // 肩端 半幅
-      const armW2 = 8;    // 手首 半幅
+      const armDy = p.sleeveLength * 0.08;
+      const armW1 = 12;
+      const armW2 = 8;
 
       // 脚
       const legGap = 5;
@@ -2415,37 +2423,37 @@
       const legTaper = legTopW - legBotW;
       const ankleY = Math.min(hipY + bodyLenPx * 0.95, 520);
 
-      const r = (n) => Math.round(n * 10) / 10;  // 小数1桁
+      const r = (n) => Math.round(n * 10) / 10;
 
       [
         // 頭
         createSvgElement("ellipse", { cx, cy: 52, rx: 20, ry: 24, ...s }),
 
-        // 首（矩形）
+        // 首
         createSvgElement("path", {
           d: `M ${cx - neckHW} ${neckTopY} L ${cx + neckHW} ${neckTopY} L ${cx + neckHW} ${neckBotY} L ${cx - neckHW} ${neckBotY} Z`,
           ...s
         }),
 
-        // 鎖骨（台形）: 首下端 → 肩レベル を隙間なく接続
+        // 胸（首下端 → 肩レベル / ±30px に抑えて広がりすぎを防ぐ）
         createSvgElement("path", {
-          d: `M ${cx - neckHW} ${neckBotY} L ${cx + neckHW} ${neckBotY} L ${r(BR)} ${r(shldrY)} L ${r(BL)} ${r(shldrY)} Z`,
+          d: `M ${cx - neckHW} ${neckBotY} L ${cx + neckHW} ${neckBotY} L ${cx + chestHW} ${r(shldrY)} L ${cx - chestHW} ${r(shldrY)} Z`,
           ...s
         }),
 
-        // 胴体: 肩 → ウエスト → 腰（鎖骨・腕と頂点を共有）
+        // 胴体（肩幅で広がり身幅テーパー → 腰）
         createSvgElement("path", {
           d: `M ${r(BL)} ${r(shldrY)} L ${r(BR)} ${r(shldrY)} L ${r(cx + waistHW)} ${r(waistY)} L ${r(cx + hipHW)} ${r(hipY)} L ${r(cx - hipHW)} ${r(hipY)} L ${r(cx - waistHW)} ${r(waistY)} Z`,
           ...s
         }),
 
-        // 右腕: 肩コーナー (BR, shldrY) を共有して外側へ伸びる
+        // 右腕
         createSvgElement("path", {
           d: `M ${r(BR)} ${r(shldrY - armW1)} L ${r(BR + armDx)} ${r(shldrY + armDy - armW2)} L ${r(BR + armDx)} ${r(shldrY + armDy + armW2)} L ${r(BR)} ${r(shldrY + armW1)} Z`,
           ...s
         }),
 
-        // 左腕（右腕の鏡像）
+        // 左腕
         createSvgElement("path", {
           d: `M ${r(BL)} ${r(shldrY - armW1)} L ${r(BL - armDx)} ${r(shldrY + armDy - armW2)} L ${r(BL - armDx)} ${r(shldrY + armDy + armW2)} L ${r(BL)} ${r(shldrY + armW1)} Z`,
           ...s
@@ -2548,7 +2556,7 @@
       };
 
       appendScaleGrid(svg, bounds);
-      appendHumanSilhouette(svg, bounds, compared);
+      appendHumanSilhouette(svg, bounds, baseline);  // 体型はbaseline固定（awa実測）
 
       appendFrontFlatShirt(svg, baseline, bounds, {
         name: "baseline",
