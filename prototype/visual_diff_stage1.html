@@ -2368,111 +2368,66 @@
     }
 
     function appendHumanSilhouette(svg, bounds, baseline) {
-      // ボディは baseline（awa実測）固定。比較対象を変えてもシルエットは動かない。
-      // 胴体幅は shirt body width ベース → シャツが体の外側を包む形になる。
+      // マネキン正面シルエット（腰上げ / 脚なし）。
+      // ボディは baseline 固定 — 比較対象を変えてもシルエットは動かない。
+      // 頭 + T字型ボディ（首・肩・腕スタブ・胴体）を2パスで描く。
       const p = buildFrontFlatTemplate(baseline, bounds);
       if (!p) return;
 
       const cx = bounds.centerX;
+      const r = (n) => Math.round(n * 10) / 10;
       const s = {
-        fill: "#edecea",
-        stroke: "#b0afa8",
-        "stroke-width": "1.5",
+        fill: "#cac8c4",
+        stroke: "#a8a6a2",
+        "stroke-width": "1",
         "stroke-linejoin": "round",
         "stroke-linecap": "round",
-        opacity: "0.72"
+        opacity: "0.82"
       };
 
-      // 肩シームY（baseline に固定）
+      // baseline 基準の肩・袖
       const shldrY = p.shoulderY;
-
-      // ボディ肩幅: shirt shoulder × 88%（シャツ肩縫い目の内側に収まる）
       const halfShldr = (p.rightShoulder - p.leftShoulder) / 2 * 0.88;
       const BL = cx - halfShldr;
       const BR = cx + halfShldr;
+      const armDx = p.sleeveLength;       // 腕先 ≈ シャツ袖先
+      const armHW = 13;                    // 腕の半高さ
 
-      // 胴体幅: shirt body width × 88%（身幅ベース / 肩幅より広い体型も正確に）
-      const bodyHalfW = p.bodyW / 2 * 0.88;
+      // 腰カット（着丈の約55%、シャツ裾よりかなり上）
+      const bodyLenPx = baseline.dimensions.length_cm * bounds.scale;
+      const waistCutY = shldrY + bodyLenPx * 0.55;
+      const waistHW = halfShldr * 0.87;   // 腰はわずかにテーパー
 
       // 首
-      const neckHW = 8;
-      const neckTopY = 75;
-      const neckBotY = 98;
+      const neckHW = 10;
+      const neckTopY = 76;
+      const neckBotY = 100;
 
-      // 胸（首下端 → 肩レベル への細い台形 / 最大 ±30px に抑える）
-      const chestHW = 30;
-
-      // 胴体
-      const bodyLenPx = baseline.dimensions.length_cm * bounds.scale;
-      const torsoH = bodyLenPx * 0.88;
-      const hipY = shldrY + torsoH;
-      const waistY = shldrY + torsoH * 0.58;
-      const waistHW = bodyHalfW * 0.86;
-      const hipHW = bodyHalfW * 0.82;
-
-      // 腕（baseline 袖丈に追従 / ほぼ水平）
-      const armDx = p.sleeveLength;
-      const armDy = p.sleeveLength * 0.08;
-      const armW1 = 12;
-      const armW2 = 8;
-
-      // 脚
-      const legGap = 5;
-      const legTopW = hipHW - legGap;
-      const legBotW = legTopW * 0.70;
-      const legTaper = legTopW - legBotW;
-      const ankleY = Math.min(hipY + bodyLenPx * 0.95, 520);
-
-      const r = (n) => Math.round(n * 10) / 10;
+      // T字型ボディパス（首 → 肩傾斜 → 腕スタブ → 胴体 → 腰カット）
+      // 時計回りで右側から描く
+      const bodyD = [
+        `M ${cx + neckHW} ${neckTopY}`,
+        `L ${cx + neckHW} ${neckBotY}`,
+        `L ${r(BR)} ${r(shldrY - armHW)}`,
+        `L ${r(BR + armDx)} ${r(shldrY - armHW)}`,
+        `L ${r(BR + armDx)} ${r(shldrY + armHW)}`,
+        `L ${r(BR)} ${r(shldrY + armHW)}`,
+        `L ${r(cx + waistHW)} ${r(waistCutY)}`,
+        `L ${r(cx - waistHW)} ${r(waistCutY)}`,
+        `L ${r(BL)} ${r(shldrY + armHW)}`,
+        `L ${r(BL - armDx)} ${r(shldrY + armHW)}`,
+        `L ${r(BL - armDx)} ${r(shldrY - armHW)}`,
+        `L ${r(BL)} ${r(shldrY - armHW)}`,
+        `L ${cx - neckHW} ${neckBotY}`,
+        `L ${cx - neckHW} ${neckTopY}`,
+        "Z"
+      ].join(" ");
 
       [
-        // 頭
-        createSvgElement("ellipse", { cx, cy: 52, rx: 20, ry: 24, ...s }),
-
-        // 首
-        createSvgElement("path", {
-          d: `M ${cx - neckHW} ${neckTopY} L ${cx + neckHW} ${neckTopY} L ${cx + neckHW} ${neckBotY} L ${cx - neckHW} ${neckBotY} Z`,
-          ...s
-        }),
-
-        // 胸（首下端 → 肩レベル / ±30px に抑えて広がりすぎを防ぐ）
-        createSvgElement("path", {
-          d: `M ${cx - neckHW} ${neckBotY} L ${cx + neckHW} ${neckBotY} L ${cx + chestHW} ${r(shldrY)} L ${cx - chestHW} ${r(shldrY)} Z`,
-          ...s
-        }),
-
-        // 胴体（肩幅で広がり身幅テーパー → 腰）
-        createSvgElement("path", {
-          d: `M ${r(BL)} ${r(shldrY)} L ${r(BR)} ${r(shldrY)} L ${r(cx + waistHW)} ${r(waistY)} L ${r(cx + hipHW)} ${r(hipY)} L ${r(cx - hipHW)} ${r(hipY)} L ${r(cx - waistHW)} ${r(waistY)} Z`,
-          ...s
-        }),
-
-        // 右腕
-        createSvgElement("path", {
-          d: `M ${r(BR)} ${r(shldrY - armW1)} L ${r(BR + armDx)} ${r(shldrY + armDy - armW2)} L ${r(BR + armDx)} ${r(shldrY + armDy + armW2)} L ${r(BR)} ${r(shldrY + armW1)} Z`,
-          ...s
-        }),
-
-        // 左腕
-        createSvgElement("path", {
-          d: `M ${r(BL)} ${r(shldrY - armW1)} L ${r(BL - armDx)} ${r(shldrY + armDy - armW2)} L ${r(BL - armDx)} ${r(shldrY + armDy + armW2)} L ${r(BL)} ${r(shldrY + armW1)} Z`,
-          ...s
-        }),
-
-        // 右脚: 外上端 (cx+hipHW, hipY) = 胴体腰コーナー
-        createSvgElement("path", {
-          d: `M ${r(cx + legGap)} ${r(hipY)} L ${r(cx + hipHW)} ${r(hipY)} L ${r(cx + hipHW - legTaper)} ${r(ankleY)} L ${r(cx + legGap)} ${r(ankleY)} Z`,
-          ...s
-        }),
-
-        // 左脚: 外上端 (cx-hipHW, hipY) = 胴体腰コーナー
-        createSvgElement("path", {
-          d: `M ${r(cx - hipHW)} ${r(hipY)} L ${r(cx - legGap)} ${r(hipY)} L ${r(cx - legGap)} ${r(ankleY)} L ${r(cx - hipHW + legTaper)} ${r(ankleY)} Z`,
-          ...s
-        }),
-
-        // へそ
-        createSvgElement("circle", { cx, cy: r(shldrY + torsoH * 0.28), r: 3, fill: "#b0afa8", stroke: "none", opacity: "0.65" })
+        // 頭（やや大きめの楕円）
+        createSvgElement("ellipse", { cx, cy: 48, rx: 22, ry: 26, ...s }),
+        // T字型ボディ
+        createSvgElement("path", { d: bodyD, ...s }),
       ].forEach(el => svg.appendChild(el));
     }
 
