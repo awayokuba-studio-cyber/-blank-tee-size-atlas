@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Blank Tee Size Atlas / Visual Difference Stage 1</title>
+  <title>Blank Tee Size Atlas β</title>
   <style>
     :root {
       color-scheme: light;
@@ -55,7 +55,7 @@
     }
 
     h1 {
-      font-size: clamp(28px, 5vw, 48px);
+      font-size: clamp(22px, 5vw, 42px);
       line-height: 1.08;
       letter-spacing: 0;
     }
@@ -63,21 +63,39 @@
     .lead {
       max-width: 720px;
       color: var(--muted);
-      font-size: 15px;
+      font-size: 14px;
+    }
+
+    .baseline-note {
+      font-size: 12px;
+      color: var(--muted);
+      border-left: 2px solid var(--line);
+      padding-left: 8px;
+      margin: 2px 0 0;
     }
 
     .toolbar {
+      margin: 14px 0 16px;
+    }
+
+    .compare-section {
       display: grid;
-      grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
-      gap: 12px;
-      margin: 20px 0 22px;
-      align-items: end;
+      gap: 6px;
+    }
+
+    .compare-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .compare-cascade {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
 
     label {
@@ -434,10 +452,10 @@
       font-size: 12px;
     }
 
-    .mode-switch {
+    .tab-row {
       display: inline-grid;
-      grid-template-columns: repeat(2, minmax(120px, 1fr));
-      width: min(100%, 360px);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: min(100%, 420px);
       gap: 4px;
       margin: 0 0 18px;
       padding: 4px;
@@ -446,55 +464,24 @@
       background: #f1f0eb;
     }
 
-    .mode-button {
+    .tab-button {
       min-height: 40px;
       border: 0;
       border-radius: 6px;
       background: transparent;
       color: var(--muted);
       font: inherit;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
+      white-space: nowrap;
+      padding: 0 4px;
     }
 
-    .mode-button[aria-pressed="true"] {
+    .tab-button[aria-pressed="true"] {
       background: var(--panel);
       color: var(--ink);
       box-shadow: 0 1px 8px rgba(42, 39, 33, 0.08);
-    }
-
-    .guide-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      margin: -6px 0 18px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .guide-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 32px;
-      padding: 5px 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.68);
-      cursor: pointer;
-    }
-
-    .guide-toggle input {
-      width: 15px;
-      height: 15px;
-      margin: 0;
-      accent-color: var(--compare);
-    }
-
-    .guide-toggle[aria-disabled="true"] {
-      opacity: 0.42;
-      cursor: not-allowed;
     }
 
     .surface {
@@ -734,10 +721,14 @@
     @media (max-width: 820px) {
       main {
         width: min(100% - 24px, 680px);
-        padding-top: 22px;
+        padding-top: 14px;
       }
 
-      .toolbar,
+      header {
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
       .compare-cascade,
       .manual-grid,
       .manual-grid.dimensions,
@@ -745,6 +736,14 @@
       .surface,
       .metric-grid {
         grid-template-columns: 1fr;
+      }
+
+      .tab-row {
+        width: 100%;
+      }
+
+      h2 {
+        font-size: 15px;
       }
 
       .session-tees-head {
@@ -798,41 +797,35 @@
 <body>
   <main>
     <header>
-      <h1>Visual Difference Stage 1</h1>
-      <p class="lead">everyone / CRC / Pro Club の3件だけを使った、基準Tとの差分確認用モック。サイズ感の差分理解用で、厳密な型紙ではありません。</p>
+      <h1>Blank Tee Size Atlas β</h1>
+      <p class="lead">awayokuba essentials tee（CRC実測 L）を基準に、候補Tシャツとの寸法差を見るための試作版です。厳密な型紙ではなく、サイズ感の差分理解用です。</p>
+      <p class="baseline-note">基準：CRC SS TUBULAR T-SHIRT / L（awa実測）</p>
     </header>
 
-	    <section class="toolbar" aria-label="comparison controls">
-	      <label>
-	        基準
-	        <select id="baselineSelect"></select>
-      </label>
-      <div class="compare-cascade" aria-label="comparison selector">
-        <label>
-          比較するTシャツ：ブランド
-          <select id="compareBrandSelect"></select>
-        </label>
-        <label>
-          比較するTシャツ：製品
-          <select id="compareProductSelect"></select>
-        </label>
-        <label>
-          比較するTシャツ：サイズ
-          <select id="compareSizeSelect"></select>
-	        </label>
-	      </div>
-	    </section>
-
-	    <section class="mode-switch" aria-label="display mode">
-	      <button class="mode-button" type="button" data-mode="compare" aria-pressed="true">比較</button>
-	      <button class="mode-button" type="button" data-mode="fit" aria-pressed="false">着用差分</button>
+    <section class="toolbar" aria-label="comparison controls">
+      <div class="compare-section">
+        <p class="compare-section-label">比較対象</p>
+        <div class="compare-cascade" aria-label="comparison selector">
+          <label>
+            ブランド
+            <select id="compareBrandSelect"></select>
+          </label>
+          <label>
+            製品
+            <select id="compareProductSelect"></select>
+          </label>
+          <label>
+            サイズ
+            <select id="compareSizeSelect"></select>
+          </label>
+        </div>
+      </div>
     </section>
 
-    <section class="guide-control" aria-label="measurement guide control">
-      <label class="guide-toggle" id="measurementGuideToggle">
-        <input id="measurementGuideInput" type="checkbox">
-        <span>採寸ガイド</span>
-      </label>
+    <section class="tab-row" aria-label="display mode">
+      <button class="tab-button" type="button" data-tab="compare" aria-pressed="true">比較</button>
+      <button class="tab-button" type="button" data-tab="fit" aria-pressed="false">着用差分</button>
+      <button class="tab-button" type="button" data-tab="guide" aria-pressed="false">採寸ガイド</button>
     </section>
 
     <section class="surface">
@@ -840,6 +833,7 @@
         <div class="visual-top">
           <div>
             <h2 id="pairTitle">Outline</h2>
+            <p class="hint" id="pairSubTitle" style="margin:2px 0 0;font-size:12px;"></p>
             <p class="hint" id="modeDescription">front flat technical style の前面図に、着丈・身幅・肩幅・袖丈の差分を重ねています。</p>
           </div>
           <div class="legend" id="legend" aria-label="legend" data-mode="compare">
@@ -983,7 +977,7 @@
 	  </main>
 
   <footer>
-    <p>Private prototype / not for distribution / last updated: 2026-05-30 / Stage 3 backup restore</p>
+    <p>Private prototype / not for distribution / last updated: 2026-06-05 / Mobile UI cleanup / fixed CRC baseline</p>
   </footer>
 
   <script>
@@ -1067,12 +1061,14 @@
     const USER_INPUT_SCHEMA_VERSION = 1;
     const ATLAS_STORAGE_PREFIX = "atlas_";
 
+    const FIXED_BASELINE_KEY = "crc_ss_tubular_ss:L";
+
     const state = {
       data: FALLBACK_DATA,
       userInputs: [],
       userInputCounter: 0,
-      baselineKey: "everyone_3p_ss:L",
-      compareKey: "crc_ss_tubular_ss:L",
+      baselineKey: FIXED_BASELINE_KEY,
+      compareKey: "everyone_3p_ss:L",
       mode: "compare",
       measurementGuide: false
     };
@@ -1103,48 +1099,26 @@
         state.data = FALLBACK_DATA;
       }
 
-      state.baselineKey = state.data.meta?.baseline_default || state.baselineKey;
+      state.baselineKey = FIXED_BASELINE_KEY; // baseline は常に CRC L（awa実測）固定
       loadUserInputsFromLocalStorage();
       state.compareKey = itemByKey(state.compareKey) ? state.compareKey : fallbackCompareKey();
       setupManualInput();
       setupSessionTeeList();
       renderControls();
       renderModeControls();
-      renderMeasurementGuideControl();
       render();
     }
 
     function renderControls() {
-      const baselineSelect = $("baselineSelect");
       const brandSelect = $("compareBrandSelect");
       const productSelect = $("compareProductSelect");
       const sizeSelect = $("compareSizeSelect");
-      const baselineOptions = new Set(state.data.meta?.baseline_options || []);
-
-      baselineSelect.innerHTML = "";
-
-      baseItems().forEach((item) => {
-        const key = keyOf(item);
-        if (baselineOptions.has(key)) {
-          baselineSelect.appendChild(new Option(labelOf(item), key));
-        }
-      });
 
       if (!itemByKey(state.compareKey) || state.compareKey === state.baselineKey) {
         state.compareKey = fallbackCompareKey();
       }
 
-      baselineSelect.value = state.baselineKey;
       syncCompareCascade(state.compareKey);
-
-      baselineSelect.onchange = () => {
-        state.baselineKey = baselineSelect.value;
-        if (state.compareKey === state.baselineKey) {
-          state.compareKey = fallbackCompareKey();
-        }
-        renderControls();
-        render();
-      };
 
       brandSelect.onchange = () => {
         selectFirstAvailableCompare(brandSelect.value, null);
@@ -1242,36 +1216,36 @@
       sizeSelect.value = keyOf(selected);
     }
 
+    function activeTab() {
+      if (state.mode === "fit") return "fit";
+      if (state.measurementGuide) return "guide";
+      return "compare";
+    }
+
+    function syncTabButtons() {
+      const tab = activeTab();
+      document.querySelectorAll(".tab-button").forEach((b) => {
+        b.setAttribute("aria-pressed", b.dataset.tab === tab ? "true" : "false");
+      });
+    }
+
     function renderModeControls() {
-      document.querySelectorAll(".mode-button").forEach((button) => {
-        button.setAttribute("aria-pressed", button.dataset.mode === state.mode ? "true" : "false");
+      document.querySelectorAll(".tab-button").forEach((button) => {
         button.addEventListener("click", () => {
-          state.mode = button.dataset.mode;
-          document.querySelectorAll(".mode-button").forEach((item) => {
-            item.setAttribute("aria-pressed", item.dataset.mode === state.mode ? "true" : "false");
-          });
+          const tab = button.dataset.tab;
+          if (tab === "compare") { state.mode = "compare"; state.measurementGuide = false; }
+          else if (tab === "fit")  { state.mode = "fit";     state.measurementGuide = false; }
+          else if (tab === "guide"){ state.mode = "compare"; state.measurementGuide = true; }
+          syncTabButtons();
           render();
         });
       });
-    }
-
-    function renderMeasurementGuideControl() {
-      const input = $("measurementGuideInput");
-      input.checked = state.measurementGuide;
-      input.addEventListener("change", () => {
-        state.measurementGuide = input.checked;
-        render();
-      });
+      syncTabButtons();
     }
 
     function updateMeasurementGuideControl() {
-      const isCompareMode = state.mode === "compare";
-      const input = $("measurementGuideInput");
-      const toggle = $("measurementGuideToggle");
-      input.disabled = !isCompareMode;
-      input.checked = state.measurementGuide;
-      toggle.setAttribute("aria-disabled", isCompareMode ? "false" : "true");
-      $("measurementGuideNote").textContent = isCompareMode && state.measurementGuide
+      syncTabButtons();
+      $("measurementGuideNote").textContent = state.measurementGuide
         ? "登録寸法の反映位置を示す補助ガイドです。"
         : "";
     }
@@ -2675,7 +2649,11 @@
       const compared = itemByKey(state.compareKey);
       if (!baseline || !compared) return;
 
-      $("pairTitle").textContent = `${labelOf(baseline)} vs ${labelOf(compared)}`;
+      // カードタイトル: 比較対象を主語に、基準はサブ表示
+      $("pairTitle").textContent = isUserInput(compared)
+        ? compared.display_name
+        : `${compared.display_name} ${compared.size}`;
+      $("pairSubTitle").textContent = `vs ${baseline.brand} ${baseline.size}（${compareQualifier(baseline) || baseline.source_label}）`;
       updateMeasurementGuideControl();
       const diffs = difference(baseline, compared);
       if (state.mode === "fit") {
