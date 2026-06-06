@@ -574,6 +574,62 @@
       font-size: 12px;
     }
 
+    .dims-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .dims-cell {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 6px 10px;
+      background: #fffefa;
+      display: grid;
+      gap: 2px;
+      align-content: start;
+      text-align: center;
+    }
+
+    .dims-cell .dims-name {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .dims-cell .dims-value {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dims-cell .dims-unit {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 2px;
+    }
+
+    .dims-cell .dims-diff {
+      font-size: 11.5px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      margin-top: 1px;
+    }
+
+    .dims-cell .dims-diff.close { color: var(--green); }
+    .dims-cell .dims-diff.far { color: var(--warm); }
+    .dims-cell .dims-diff.same { color: var(--muted); }
+
+    .dims-cell .dims-base {
+      font-size: 10.5px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
 	    .visual-note {
 	      display: grid;
 	      gap: 4px;
@@ -853,6 +909,7 @@
             <desc id="svgDesc">Baseline and compared T-shirt outlines are drawn at the same scale.</desc>
           </svg>
         </div>
+        <div class="dims-bar" id="dimsBar" aria-label="比較対象の寸法と基準との差分"></div>
         <div class="visual-note">
           <p class="hint" id="scaleHint"></p>
           <p class="hint" id="modeCaution"></p>
@@ -2288,12 +2345,11 @@
         outlineMetrics(compared).drawnW
       );
       const maxLength = Math.max(baseline.dimensions.length_cm, compared.dimensions.length_cm);
-      // 左右に吹き出し帯を確保するため、シャツ自体は中央480px程度に圧縮
-      const shirtMaxWidth = 460;
+      // Tシャツを主役として最大化（吹き出しはSVG外の寸法バーへ移動）
       const bounds = {
         centerX: 360,
         top: 54,
-        scale: Math.min(shirtMaxWidth / maxWidth, 445 / maxLength)
+        scale: Math.min(720 / maxWidth, 480 / maxLength)
       };
 
 	      appendScaleGrid(svg, bounds);
@@ -2326,34 +2382,6 @@
       });
 
       if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
-
-      // 寸法差吹き出し（採寸ガイドOFFの時だけ表示。シャツ外側の左右余白に配置）
-      // 1行目=比較対象の実寸（ショップで判断したい主軸）、2行目=基準との差分
-      if (diffs && !state.measurementGuide) {
-        const p = templatePoints(compared, bounds);
-        if (p) {
-          const sBox = { w: 178, h: 56 };
-          const leftX = 12;
-          const rightX = 720 - 12 - sBox.w; // = 530
-          const abs = compared.dimensions;
-          const base = baseline.dimensions;
-          const callouts = [
-            { x: leftX,  y: Math.max(p.shoulderY - sBox.h / 2, 56),
-              ...sBox, targetX: p.leftShoulder,          targetY: p.shoulderY,
-              axisKey: "shoulder_cm", value: diffs.shoulder_cm, absValue: abs.shoulder_cm, baseValue: base.shoulder_cm },
-            { x: rightX, y: Math.round(p.underArmY - sBox.h / 2),
-              ...sBox, targetX: p.rightBody,              targetY: p.underArmY - 10,
-              axisKey: "width_cm",    value: diffs.width_cm,    absValue: abs.width_cm,    baseValue: base.width_cm },
-            { x: leftX,  y: Math.min(p.sleeveCuffCenterY - sBox.h / 2, p.bottom - sBox.h - 70),
-              ...sBox, targetX: p.leftSleeveCuffCenterX,  targetY: p.sleeveCuffCenterY,
-              axisKey: "sleeve_cm",   value: diffs.sleeve_cm,   absValue: abs.sleeve_cm,   baseValue: base.sleeve_cm },
-            { x: rightX, y: Math.min(p.bottom - sBox.h - 4, 478),
-              ...sBox, targetX: 360,                       targetY: p.bottom,
-              axisKey: "length_cm",   value: diffs.length_cm,   absValue: abs.length_cm,   baseValue: base.length_cm }
-          ];
-          callouts.forEach((c) => appendCallout(svg, c));
-        }
-      }
 
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
       label.setAttribute("x", 360);
@@ -2615,6 +2643,25 @@
       return labels.length ? labels : ["差分小さめ"];
     }
 
+    function renderDimsBar(baseline, compared, diffs) {
+      // SVG直下の4分割寸法バー（ショップ用途：実寸主軸）
+      $("dimsBar").innerHTML = AXES.map(([key, label]) => {
+        const value = diffs[key];
+        const absVal = compared.dimensions[key];
+        const baseVal = baseline.dimensions[key];
+        const closeness = Math.abs(value) <= 0.7 ? (value === 0 ? "same" : "close") : "far";
+        const diffStr = value === 0 ? "±0" : `${sign(value)}${cm(value)}cm`;
+        return `
+          <div class="dims-cell">
+            <div class="dims-name">${label}</div>
+            <div class="dims-value">${cm(absVal)}<span class="dims-unit">cm</span></div>
+            <div class="dims-diff ${closeness}">${diffStr}</div>
+            <div class="dims-base">基準 ${cm(baseVal)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderMetrics(diffs, baseline, compared) {
       // 主軸: 比較対象の実寸 / 補足: 基準値と差分（ショップでの判断に直結する設計）
       $("metricGrid").innerHTML = AXES.map(([key, label]) => {
@@ -2706,6 +2753,7 @@
         : "2枚を同じ縮尺で重ね、着丈・身幅・肩幅・袖丈の差分を周囲に表示しています。";
       drawOutlines(baseline, compared, diffs);
       appendUserInputCaution(compared);
+      renderDimsBar(baseline, compared, diffs);
       renderMetrics(diffs, baseline, compared);
       renderMemo(baseline, compared);
       renderSessionTeeList();
