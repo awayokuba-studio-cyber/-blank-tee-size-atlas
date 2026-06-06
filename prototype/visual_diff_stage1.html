@@ -861,8 +861,8 @@
   <main>
     <header>
       <h1>Blank Tee Size Atlas β</h1>
-      <p class="lead">awayokuba essentials tee（CRC実測 L）を基準に、候補Tシャツとの寸法差を見るための試作版です。厳密な型紙ではなく、サイズ感の差分理解用です。</p>
-      <p class="baseline-note">基準：CRC SS TUBULAR T-SHIRT / L（awa実測）</p>
+      <p class="lead">awayokuba essentials tee を基準に、候補Tシャツの実寸とサイズ感の差を確認するためのツールです。厳密な型紙ではなく、判断補助用です。</p>
+      <p class="baseline-note">基準：awayokuba essentials tee / L（実体: CRC SS TUBULAR / awa実測）</p>
     </header>
 
     <section class="toolbar" aria-label="comparison controls">
@@ -894,13 +894,13 @@
       <section class="visual" aria-label="outline comparison">
         <div class="visual-top">
           <div>
-            <h2 id="pairTitle">Outline</h2>
+            <h2 id="pairTitle">比較対象を選んでください</h2>
             <p class="hint" id="pairSubTitle" style="margin:2px 0 0;font-size:12px;"></p>
-            <p class="hint" id="modeDescription">front flat technical style の前面図に、着丈・身幅・肩幅・袖丈の差分を重ねています。</p>
+            <p class="hint" id="modeDescription"></p>
           </div>
           <div class="legend" id="legend" aria-label="legend" data-mode="compare">
-            <span class="legend-item"><span class="swatch"></span><span>baseline</span></span>
-            <span class="legend-item"><span class="swatch compare"></span><span>compared</span></span>
+            <span class="legend-item"><span class="swatch"></span><span>基準（essentials）</span></span>
+            <span class="legend-item"><span class="swatch compare"></span><span>比較対象</span></span>
           </div>
         </div>
         <div class="svg-wrap">
@@ -912,15 +912,13 @@
         <div class="dims-bar" id="dimsBar" aria-label="比較対象の寸法と基準との差分"></div>
         <div class="visual-note">
           <p class="hint" id="scaleHint"></p>
-          <p class="hint" id="modeCaution"></p>
           <p class="hint" id="measurementGuideNote"></p>
-          <p class="hint">アウトラインは寸法差分を理解するための簡易表示であり、正確な型紙再現ではありません。 Outline is a simplified visual guide based on measurements, not an exact garment pattern.</p>
         </div>
       </section>
 
       <aside class="side">
         <section class="metrics" aria-label="dimension differences">
-          <h2>差分</h2>
+          <h2>寸法詳細</h2>
           <div class="metric-grid" id="metricGrid"></div>
           <div class="labels" id="summaryLabels"></div>
         </section>
@@ -1034,7 +1032,7 @@
 	  </main>
 
   <footer>
-    <p>Private prototype / not for distribution / last updated: 2026-06-05 / Mobile UI cleanup / fixed CRC baseline</p>
+    <p>Blank Tee Size Atlas β / AWAYOKUBA STUDIO の判断補助ツール / last updated: 2026-06-06</p>
   </footer>
 
   <script>
@@ -1300,7 +1298,7 @@
     function updateMeasurementGuideControl() {
       syncTabButtons();
       $("measurementGuideNote").textContent = state.measurementGuide
-        ? "登録寸法の反映位置を示す補助ガイドです。"
+        ? "肩先〜肩先（肩幅）、脇下〜脇下（身幅）、首元〜裾（着丈）、肩先〜袖口（袖丈）。"
         : "";
     }
 
@@ -2262,7 +2260,7 @@
         "font-size": "13",
         "font-weight": "700"
       });
-      guideCaption.textContent = "採寸ガイド：比較対象（破線）の寸法";
+      guideCaption.textContent = "採寸位置：比較対象の各部寸法";
       group.appendChild(guideCaption);
 
       drawMeasurementGuideForItem(group, compared, comparedPoints, {
@@ -2383,19 +2381,7 @@
 
       if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
 
-      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("x", 360);
-      label.setAttribute("y", 540);
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("fill", "#6f716a");
-      label.setAttribute("font-size", "12");
-      label.textContent = "2枚を同じ縮尺で重ねています（大きさの差 = 寸法差）";
-      svg.appendChild(label);
-
-      $("scaleHint").textContent = state.measurementGuide
-        ? "比較対象（破線）に採寸位置を重ねて表示。グリッドは実寸目安として 1マス = 5cm です。"
-        : "2枚を同じ縮尺で重ね、寸法差を周囲の吹き出しで表示。グリッドは実寸目安として 1マス = 5cm です。";
-      $("modeCaution").textContent = "図は比較理解のための概略表示です。";
+      $("scaleHint").textContent = "グリッド 1マス = 5cm（実寸目安）。図は判断補助用の概略表示で、正確な型紙ではありません。";
     }
 
     function appendHumanSilhouette(svg, bounds, baseline) {
@@ -2686,10 +2672,18 @@
         .join("");
     }
 
+    function memoLabel(item, isBaseline) {
+      if (isBaseline) return `基準：awayokuba essentials L（実体: CRC SS TUBULAR / awa実測）`;
+      return labelOf(item);
+    }
+
     function renderMemo(baseline, compared) {
-      $("memoGrid").innerHTML = [baseline, compared].map((item) => `
+      $("memoGrid").innerHTML = [
+        { item: baseline, isBaseline: true },
+        { item: compared, isBaseline: false }
+      ].map(({ item, isBaseline }) => `
         <div class="memo-item">
-          <strong>${escapeHTML(labelOf(item))}</strong>
+          <strong>${escapeHTML(memoLabel(item, isBaseline))}</strong>
           <p>${escapeHTML(item.awa_comment || (isUserInput(item) ? "実着メモなし（ユーザー入力）" : "実着メモなし"))}</p>
           ${isUserInput(item) ? `<p>${escapeHTML(`補足: brand=${item.brand} / product=${item.product_name}`)}</p>` : ""}
         </div>
@@ -2744,13 +2738,13 @@
       $("pairTitle").textContent = isUserInput(compared)
         ? compared.display_name
         : `${compared.display_name} ${compared.size}`;
-      $("pairSubTitle").textContent = `vs ${baseline.brand} ${baseline.size}（${compareQualifier(baseline) || baseline.source_label}）`;
+      $("pairSubTitle").textContent = "基準：awayokuba essentials L";
       updateMeasurementGuideControl();
       const diffs = difference(baseline, compared);
       $("legend").dataset.mode = "compare";
       $("modeDescription").textContent = state.measurementGuide
-        ? "採寸位置のガイドを比較対象に重ねて表示しています。"
-        : "2枚を同じ縮尺で重ね、着丈・身幅・肩幅・袖丈の差分を周囲に表示しています。";
+        ? "比較対象に採寸位置（肩幅・身幅・着丈・袖丈の測り方）を重ねています。"
+        : "比較対象（青）と基準（グレー）を同じ縮尺で重ねた図です。";
       drawOutlines(baseline, compared, diffs);
       appendUserInputCaution(compared);
       renderDimsBar(baseline, compared, diffs);
