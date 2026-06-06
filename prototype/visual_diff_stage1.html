@@ -2328,21 +2328,28 @@
       if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
 
       // 寸法差吹き出し（採寸ガイドOFFの時だけ表示。シャツ外側の左右余白に配置）
+      // 1行目=比較対象の実寸（ショップで判断したい主軸）、2行目=基準との差分
       if (diffs && !state.measurementGuide) {
         const p = templatePoints(compared, bounds);
         if (p) {
-          const sBox = { w: 168, h: 54 };
-          const leftX = 14;
-          const rightX = 720 - 14 - sBox.w; // = 538
+          const sBox = { w: 178, h: 56 };
+          const leftX = 12;
+          const rightX = 720 - 12 - sBox.w; // = 530
+          const abs = compared.dimensions;
+          const base = baseline.dimensions;
           const callouts = [
             { x: leftX,  y: Math.max(p.shoulderY - sBox.h / 2, 56),
-              ...sBox, targetX: p.leftShoulder,             targetY: p.shoulderY,         axisKey: "shoulder_cm", value: diffs.shoulder_cm },
+              ...sBox, targetX: p.leftShoulder,          targetY: p.shoulderY,
+              axisKey: "shoulder_cm", value: diffs.shoulder_cm, absValue: abs.shoulder_cm, baseValue: base.shoulder_cm },
             { x: rightX, y: Math.round(p.underArmY - sBox.h / 2),
-              ...sBox, targetX: p.rightBody,                targetY: p.underArmY - 10,    axisKey: "width_cm",    value: diffs.width_cm },
+              ...sBox, targetX: p.rightBody,              targetY: p.underArmY - 10,
+              axisKey: "width_cm",    value: diffs.width_cm,    absValue: abs.width_cm,    baseValue: base.width_cm },
             { x: leftX,  y: Math.min(p.sleeveCuffCenterY - sBox.h / 2, p.bottom - sBox.h - 70),
-              ...sBox, targetX: p.leftSleeveCuffCenterX,    targetY: p.sleeveCuffCenterY, axisKey: "sleeve_cm",   value: diffs.sleeve_cm },
+              ...sBox, targetX: p.leftSleeveCuffCenterX,  targetY: p.sleeveCuffCenterY,
+              axisKey: "sleeve_cm",   value: diffs.sleeve_cm,   absValue: abs.sleeve_cm,   baseValue: base.sleeve_cm },
             { x: rightX, y: Math.min(p.bottom - sBox.h - 4, 478),
-              ...sBox, targetX: 360,                         targetY: p.bottom,            axisKey: "length_cm",   value: diffs.length_cm }
+              ...sBox, targetX: 360,                       targetY: p.bottom,
+              axisKey: "length_cm",   value: diffs.length_cm,   absValue: abs.length_cm,   baseValue: base.length_cm }
           ];
           callouts.forEach((c) => appendCallout(svg, c));
         }
@@ -2444,7 +2451,7 @@
     }
 
     function appendCallout(svg, callout) {
-      const { x, y, w, h, targetX, targetY, axisKey, value } = callout;
+      const { x, y, w, h, targetX, targetY, axisKey, value, absValue, baseValue } = callout;
       const edgeX = x < targetX ? x + w : x;
       const edgeY = y + h / 2;
       const group = createSvgElement("g", {});
@@ -2478,15 +2485,23 @@
 
       const text = createSvgElement("text", {
         x: x + 12,
-        y: y + 21,
+        y: y + 22,
         fill: "#22231f",
-        "font-size": "13.5",
+        "font-size": "15",
         "font-weight": "700"
       });
+      // 1行目: 比較対象の実寸を主軸に（ショップでの判断に直結）
       const line1 = createSvgElement("tspan", { x: x + 12, dy: 0 });
-      line1.textContent = `${axisName(axisKey)}: ${sign(value)}${cm(value)}cm`;
-      const line2 = createSvgElement("tspan", { x: x + 12, dy: 19, fill: "#6f716a", "font-weight": "500" });
-      line2.textContent = diffSentence(axisKey, value);
+      line1.textContent = `${axisName(axisKey)} ${cm(absValue)}cm`;
+      // 2行目: 基準との差分を補足
+      const line2 = createSvgElement("tspan", {
+        x: x + 12,
+        dy: 18,
+        fill: value === 0 ? "#6f716a" : (Math.abs(value) <= 0.7 ? "#4e7257" : "#9f5f3a"),
+        "font-size": "12",
+        "font-weight": "600"
+      });
+      line2.textContent = `基準 ${cm(baseValue)} → ${sign(value)}${cm(value)}cm`;
       text.appendChild(line1);
       text.appendChild(line2);
       group.appendChild(text);
@@ -2600,14 +2615,21 @@
       return labels.length ? labels : ["差分小さめ"];
     }
 
-    function renderMetrics(diffs) {
+    function renderMetrics(diffs, baseline, compared) {
+      // 主軸: 比較対象の実寸 / 補足: 基準値と差分（ショップでの判断に直結する設計）
       $("metricGrid").innerHTML = AXES.map(([key, label]) => {
         const value = diffs[key];
+        const absVal = compared.dimensions[key];
+        const baseVal = baseline.dimensions[key];
+        const diffColor = Math.abs(value) <= 0.7 ? "var(--green)" : "var(--warm)";
+        const diffText = value === 0
+          ? `基準 ${cm(baseVal)}cm（同じ）`
+          : `基準 ${cm(baseVal)} → <span style="color:${diffColor};font-weight:700;">${sign(value)}${cm(value)}cm ${axisDirection(key, value)}</span>`;
         return `
           <article class="metric">
             <div class="metric-name">${label}</div>
-            <div class="metric-value">${sign(value)}${cm(value)} cm</div>
-            <div class="metric-caption">${axisDirection(key, value)} / ${diffCaption(key, value)}</div>
+            <div class="metric-value">${cm(absVal)} <span style="font-size:14px;color:var(--muted);font-weight:500;">cm</span></div>
+            <div class="metric-caption">${diffText}</div>
           </article>
         `;
       }).join("");
@@ -2684,7 +2706,7 @@
         : "2枚を同じ縮尺で重ね、着丈・身幅・肩幅・袖丈の差分を周囲に表示しています。";
       drawOutlines(baseline, compared, diffs);
       appendUserInputCaution(compared);
-      renderMetrics(diffs);
+      renderMetrics(diffs, baseline, compared);
       renderMemo(baseline, compared);
       renderSessionTeeList();
     }
