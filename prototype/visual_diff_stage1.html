@@ -780,16 +780,23 @@
       }
 
       .svg-wrap {
-        min-height: 320px;
-        overflow-x: auto;
-        justify-items: start;
+        min-height: 280px;
+        overflow: hidden;
+        justify-items: center;
+        padding: 4px;
       }
 
       svg {
-        height: 390px;
-        min-height: 320px;
-        width: 680px;
-        max-width: none;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 720 / 560;
+        max-height: 70vh;
+        min-height: 280px;
+      }
+
+      .visual {
+        padding: 8px;
+        gap: 8px;
       }
     }
   </style>
@@ -865,12 +872,6 @@
         <section class="memo" aria-label="awa comments">
           <h2>体感メモ</h2>
           <div class="memo-grid" id="memoGrid"></div>
-        </section>
-
-        <section class="source-block" aria-label="source and status">
-          <h2>source / status</h2>
-          <div class="labels" id="badges"></div>
-          <div class="source-lines" id="sourceLines"></div>
         </section>
 	      </aside>
 	    </section>
@@ -2668,7 +2669,6 @@
       appendUserInputCaution(compared);
       renderMetrics(diffs);
       renderMemo(baseline, compared);
-      renderBadges(baseline, compared);
       renderSessionTeeList();
     }
 
