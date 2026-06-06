@@ -454,8 +454,8 @@
 
     .tab-row {
       display: inline-grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      width: min(100%, 420px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: min(100%, 320px);
       gap: 4px;
       margin: 0 0 18px;
       padding: 4px;
@@ -831,7 +831,6 @@
 
     <section class="tab-row" aria-label="display mode">
       <button class="tab-button" type="button" data-tab="compare" aria-pressed="true">比較</button>
-      <button class="tab-button" type="button" data-tab="fit" aria-pressed="false">着用差分</button>
       <button class="tab-button" type="button" data-tab="guide" aria-pressed="false">採寸ガイド</button>
     </section>
 
@@ -1218,9 +1217,7 @@
     }
 
     function activeTab() {
-      if (state.mode === "fit") return "fit";
-      if (state.measurementGuide) return "guide";
-      return "compare";
+      return state.measurementGuide ? "guide" : "compare";
     }
 
     function syncTabButtons() {
@@ -1234,9 +1231,8 @@
       document.querySelectorAll(".tab-button").forEach((button) => {
         button.addEventListener("click", () => {
           const tab = button.dataset.tab;
-          if (tab === "compare") { state.mode = "compare"; state.measurementGuide = false; }
-          else if (tab === "fit")  { state.mode = "fit";     state.measurementGuide = false; }
-          else if (tab === "guide"){ state.mode = "compare"; state.measurementGuide = true; }
+          state.mode = "compare"; // 単一モード化（着用差分タブ廃止）
+          state.measurementGuide = (tab === "guide");
           syncTabButtons();
           render();
         });
@@ -2283,7 +2279,7 @@
       svg.appendChild(group);
     }
 
-    function drawOutlines(baseline, compared) {
+    function drawOutlines(baseline, compared, diffs) {
       const svg = $("outlineSvg");
       svg.innerHTML = "";
 
@@ -2292,11 +2288,13 @@
         outlineMetrics(compared).drawnW
       );
       const maxLength = Math.max(baseline.dimensions.length_cm, compared.dimensions.length_cm);
-	      const bounds = {
-	        centerX: 360,
-	        top: 54,
-	        scale: Math.min(720 / maxWidth, 445 / maxLength)
-	      };
+      // 左右に吹き出し帯を確保するため、シャツ自体は中央480px程度に圧縮
+      const shirtMaxWidth = 460;
+      const bounds = {
+        centerX: 360,
+        top: 54,
+        scale: Math.min(shirtMaxWidth / maxWidth, 445 / maxLength)
+      };
 
 	      appendScaleGrid(svg, bounds);
 
@@ -2329,6 +2327,27 @@
 
       if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
 
+      // 寸法差吹き出し（採寸ガイドOFFの時だけ表示。シャツ外側の左右余白に配置）
+      if (diffs && !state.measurementGuide) {
+        const p = templatePoints(compared, bounds);
+        if (p) {
+          const sBox = { w: 168, h: 54 };
+          const leftX = 14;
+          const rightX = 720 - 14 - sBox.w; // = 538
+          const callouts = [
+            { x: leftX,  y: Math.max(p.shoulderY - sBox.h / 2, 56),
+              ...sBox, targetX: p.leftShoulder,             targetY: p.shoulderY,         axisKey: "shoulder_cm", value: diffs.shoulder_cm },
+            { x: rightX, y: Math.round(p.underArmY - sBox.h / 2),
+              ...sBox, targetX: p.rightBody,                targetY: p.underArmY - 10,    axisKey: "width_cm",    value: diffs.width_cm },
+            { x: leftX,  y: Math.min(p.sleeveCuffCenterY - sBox.h / 2, p.bottom - sBox.h - 70),
+              ...sBox, targetX: p.leftSleeveCuffCenterX,    targetY: p.sleeveCuffCenterY, axisKey: "sleeve_cm",   value: diffs.sleeve_cm },
+            { x: rightX, y: Math.min(p.bottom - sBox.h - 4, 478),
+              ...sBox, targetX: 360,                         targetY: p.bottom,            axisKey: "length_cm",   value: diffs.length_cm }
+          ];
+          callouts.forEach((c) => appendCallout(svg, c));
+        }
+      }
+
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
       label.setAttribute("x", 360);
       label.setAttribute("y", 540);
@@ -2338,7 +2357,9 @@
       label.textContent = "2枚を同じ縮尺で重ねています（大きさの差 = 寸法差）";
       svg.appendChild(label);
 
-      $("scaleHint").textContent = "前面フラット図のみ表示。2枚を同じ縮尺で重ねています。グリッドは実寸目安として 1マス = 5cm です。";
+      $("scaleHint").textContent = state.measurementGuide
+        ? "比較対象（破線）に採寸位置を重ねて表示。グリッドは実寸目安として 1マス = 5cm です。"
+        : "2枚を同じ縮尺で重ね、寸法差を周囲の吹き出しで表示。グリッドは実寸目安として 1マス = 5cm です。";
       $("modeCaution").textContent = "図は比較理解のための概略表示です。";
     }
 
@@ -2657,15 +2678,11 @@
       $("pairSubTitle").textContent = `vs ${baseline.brand} ${baseline.size}（${compareQualifier(baseline) || baseline.source_label}）`;
       updateMeasurementGuideControl();
       const diffs = difference(baseline, compared);
-      if (state.mode === "fit") {
-        $("legend").dataset.mode = "fit";
-        $("modeDescription").textContent = "モデュロール風の棒人間に比較Tを重ね、基準Tとの差分を吹き出しで表示しています。";
-        drawFittingImage(baseline, compared, diffs);
-      } else {
-        $("legend").dataset.mode = "compare";
-        $("modeDescription").textContent = "front flat technical style の前面図に、着丈・身幅・肩幅・袖丈の差分を重ねています。";
-        drawOutlines(baseline, compared);
-      }
+      $("legend").dataset.mode = "compare";
+      $("modeDescription").textContent = state.measurementGuide
+        ? "採寸位置のガイドを比較対象に重ねて表示しています。"
+        : "2枚を同じ縮尺で重ね、着丈・身幅・肩幅・袖丈の差分を周囲に表示しています。";
+      drawOutlines(baseline, compared, diffs);
       appendUserInputCaution(compared);
       renderMetrics(diffs);
       renderMemo(baseline, compared);
