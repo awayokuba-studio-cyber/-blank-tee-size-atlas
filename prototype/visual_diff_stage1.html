@@ -862,7 +862,7 @@
     <header>
       <h1>Blank Tee Size Atlas β</h1>
       <p class="lead">awayokuba essentials tee を基準に、候補Tシャツの実寸とサイズ感の差を確認するためのツールです。厳密な型紙ではなく、判断補助用です。</p>
-      <p class="baseline-note">基準：awayokuba essentials tee / L（実体: CRC SS TUBULAR / awa実測）</p>
+      <p class="baseline-note">基準：awayokuba essentials tee / L（実体: CRC SS TUBULAR）</p>
     </header>
 
     <section class="toolbar" aria-label="comparison controls">
@@ -1215,10 +1215,16 @@
     }
 
     function compareQualifier(item) {
-      if (item.tee_id === "crc_ss_tubular_ss" && item.spec_type === "awa_measured_prewash") return "awa実測";
+      // baseline 側の "awa実測" は表面に出さない（内部品質保証として裏に置く）
+      // CRC 公式チャートは別アイテム識別のため残す
+      if (item.tee_id === "crc_ss_tubular_ss" && item.spec_type === "awa_measured_prewash") return "";
       if (item.tee_id === "crc_ss_tubular_chart_ss") return "公式チャート";
       const match = String(item.display_name || "").match(/（(.+?)）/);
-      if (match) return match[1];
+      if (match) {
+        const q = match[1];
+        if (q === "awa実測") return "";
+        return q;
+      }
       return "";
     }
 
@@ -2673,7 +2679,7 @@
     }
 
     function memoLabel(item, isBaseline) {
-      if (isBaseline) return `基準：awayokuba essentials L（実体: CRC SS TUBULAR / awa実測）`;
+      if (isBaseline) return `基準：awayokuba essentials L`;
       return labelOf(item);
     }
 
