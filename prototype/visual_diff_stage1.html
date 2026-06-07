@@ -74,6 +74,111 @@
       margin: 2px 0 0;
     }
 
+    .quick-pick {
+      margin: 4px 0 14px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .quick-pick:empty,
+    .quick-pick[hidden] {
+      display: none;
+    }
+
+    .quick-pick-group {
+      display: grid;
+      gap: 4px;
+    }
+
+    .quick-pick-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .quick-pick-scroller {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 0 4px;
+      scrollbar-width: thin;
+    }
+
+    .quick-pick-scroller::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .quick-pick-scroller::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 3px;
+    }
+
+    .quick-chip {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 70vw;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffefa;
+      color: var(--ink);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .quick-chip:hover {
+      border-color: rgba(18, 106, 122, 0.32);
+      background: var(--compare-soft);
+    }
+
+    .quick-chip.active {
+      border-color: rgba(18, 106, 122, 0.6);
+      background: var(--compare-soft);
+      color: var(--compare);
+    }
+
+    .quick-chip-star {
+      font-size: 13px;
+      color: var(--warm);
+      line-height: 1;
+    }
+
+    .pin-button {
+      flex: 0 0 auto;
+      min-height: 36px;
+      padding: 4px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffefa;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pin-button[data-pinned="true"] {
+      border-color: rgba(159, 95, 58, 0.45);
+      background: rgba(159, 95, 58, 0.08);
+      color: var(--warm);
+    }
+
+    .pin-button:hover {
+      border-color: rgba(159, 95, 58, 0.45);
+    }
+
     .toolbar {
       margin: 14px 0 16px;
     }
@@ -865,6 +970,8 @@
       <p class="baseline-note">基準：awayokuba essentials tee / L（実体: CRC SS TUBULAR）</p>
     </header>
 
+    <section class="quick-pick" id="quickPick" aria-label="お気に入りと直近の比較対象"></section>
+
     <section class="toolbar" aria-label="comparison controls">
       <div class="compare-section">
         <p class="compare-section-label">比較対象</p>
@@ -893,8 +1000,11 @@
     <section class="surface">
       <section class="visual" aria-label="outline comparison">
         <div class="visual-top">
-          <div>
-            <h2 id="pairTitle">比較対象を選んでください</h2>
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <h2 id="pairTitle" style="min-width:0;">比較対象を選んでください</h2>
+              <button id="pinButton" class="pin-button" type="button" aria-pressed="false" hidden>★ ピン留め</button>
+            </div>
             <p class="hint" id="pairSubTitle" style="margin:2px 0 0;font-size:12px;"></p>
             <p class="hint" id="modeDescription"></p>
           </div>
@@ -1115,6 +1225,10 @@
     const USER_INPUT_STORAGE_KEY = "atlas_user_inputs_v1";
     const USER_INPUT_SCHEMA_VERSION = 1;
     const ATLAS_STORAGE_PREFIX = "atlas_";
+    const PINNED_STORAGE_KEY = "atlas_pinned_tees_v1";
+    const RECENT_STORAGE_KEY = "atlas_recent_tees_v1";
+    const MAX_PINNED = 8;
+    const MAX_RECENT = 5;
 
     const FIXED_BASELINE_KEY = "crc_ss_tubular_ss:L";
 
@@ -1125,7 +1239,9 @@
       baselineKey: FIXED_BASELINE_KEY,
       compareKey: "everyone_3p_ss:L",
       mode: "compare",
-      measurementGuide: false
+      measurementGuide: false,
+      pinned: [],
+      recent: []
     };
 
     const $ = (id) => document.getElementById(id);
@@ -1156,12 +1272,142 @@
 
       state.baselineKey = FIXED_BASELINE_KEY; // baseline は常に CRC L（awa実測）固定
       loadUserInputsFromLocalStorage();
+      loadPinnedAndRecent();
       state.compareKey = itemByKey(state.compareKey) ? state.compareKey : fallbackCompareKey();
       setupManualInput();
       setupSessionTeeList();
+      setupPinButton();
       renderControls();
       renderModeControls();
       render();
+    }
+
+    // ====== Pinned / Recent quick-pick ======
+    function loadPinnedAndRecent() {
+      try {
+        const pinRaw = window.localStorage.getItem(PINNED_STORAGE_KEY);
+        state.pinned = Array.isArray(JSON.parse(pinRaw || "[]")) ? JSON.parse(pinRaw) : [];
+      } catch (_) { state.pinned = []; }
+      try {
+        const recRaw = window.localStorage.getItem(RECENT_STORAGE_KEY);
+        state.recent = Array.isArray(JSON.parse(recRaw || "[]")) ? JSON.parse(recRaw) : [];
+      } catch (_) { state.recent = []; }
+      state.pinned = state.pinned.filter((k) => itemByKey(k)).slice(0, MAX_PINNED);
+      state.recent = state.recent.filter((k) => itemByKey(k)).slice(0, MAX_RECENT);
+    }
+
+    function savePinned() {
+      try { window.localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(state.pinned)); } catch (_) {}
+    }
+    function saveRecent() {
+      try { window.localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(state.recent)); } catch (_) {}
+    }
+
+    function pushRecent(key) {
+      if (!key || key === state.baselineKey) return;
+      state.recent = [key, ...state.recent.filter((k) => k !== key)].slice(0, MAX_RECENT);
+      saveRecent();
+    }
+
+    function togglePin(key) {
+      if (!key) return;
+      if (state.pinned.includes(key)) {
+        state.pinned = state.pinned.filter((k) => k !== key);
+      } else {
+        state.pinned = [key, ...state.pinned.filter((k) => k !== key)].slice(0, MAX_PINNED);
+      }
+      savePinned();
+    }
+
+    function chipLabel(item) {
+      // 「ブランド 製品略 / サイズ」形式（長い場合はCSSでellipsis）
+      const brand = item.brand || "";
+      const product = item.product_name || item.display_name || "";
+      const shortProduct = product.length > 22 ? product.slice(0, 20) + "…" : product;
+      return `${brand} ${shortProduct} / ${item.size}`.trim();
+    }
+
+    function setupPinButton() {
+      const btn = $("pinButton");
+      btn.addEventListener("click", () => {
+        togglePin(state.compareKey);
+        updatePinButton();
+        renderQuickPick();
+      });
+    }
+
+    function updatePinButton() {
+      const btn = $("pinButton");
+      const key = state.compareKey;
+      const isBaseline = key === state.baselineKey;
+      if (!key || isBaseline) {
+        btn.hidden = true;
+        return;
+      }
+      btn.hidden = false;
+      const pinned = state.pinned.includes(key);
+      btn.setAttribute("aria-pressed", pinned ? "true" : "false");
+      btn.dataset.pinned = pinned ? "true" : "false";
+      btn.textContent = pinned ? "★ ピン留め済み" : "☆ ピン留め";
+    }
+
+    function renderQuickPick() {
+      const wrap = $("quickPick");
+      // baseline と現在の compareKey は除外して直近表示
+      const recentKeys = state.recent.filter(
+        (k) => itemByKey(k) && !state.pinned.includes(k)
+      );
+      const pinnedKeys = state.pinned.filter((k) => itemByKey(k));
+
+      if (pinnedKeys.length === 0 && recentKeys.length === 0) {
+        wrap.innerHTML = "";
+        wrap.hidden = true;
+        return;
+      }
+      wrap.hidden = false;
+
+      const chipHTML = (key, withStar) => {
+        const item = itemByKey(key);
+        if (!item) return "";
+        const active = key === state.compareKey;
+        return `
+          <button class="quick-chip${active ? " active" : ""}"
+                  type="button"
+                  data-key="${escapeHTML(key)}"
+                  title="${escapeHTML(labelOf(item))}">
+            ${withStar ? '<span class="quick-chip-star">★</span>' : ""}<span>${escapeHTML(chipLabel(item))}</span>
+          </button>
+        `;
+      };
+
+      let html = "";
+      if (pinnedKeys.length > 0) {
+        html += `
+          <div class="quick-pick-group">
+            <p class="quick-pick-label">★ お気に入り（${pinnedKeys.length}/${MAX_PINNED}）</p>
+            <div class="quick-pick-scroller">${pinnedKeys.map((k) => chipHTML(k, true)).join("")}</div>
+          </div>
+        `;
+      }
+      if (recentKeys.length > 0) {
+        html += `
+          <div class="quick-pick-group">
+            <p class="quick-pick-label">直近</p>
+            <div class="quick-pick-scroller">${recentKeys.map((k) => chipHTML(k, false)).join("")}</div>
+          </div>
+        `;
+      }
+      wrap.innerHTML = html;
+
+      wrap.querySelectorAll(".quick-chip").forEach((b) => {
+        b.addEventListener("click", () => {
+          const key = b.dataset.key;
+          if (!key || !itemByKey(key)) return;
+          state.compareKey = key;
+          renderControls();
+          render();
+        });
+      });
     }
 
     function renderControls() {
@@ -2757,6 +3003,9 @@
       renderMetrics(diffs, baseline, compared);
       renderMemo(baseline, compared);
       renderSessionTeeList();
+      pushRecent(state.compareKey);
+      updatePinButton();
+      renderQuickPick();
     }
 
     loadData();
