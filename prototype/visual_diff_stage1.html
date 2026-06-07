@@ -1284,14 +1284,15 @@
 
     // ====== Pinned / Recent quick-pick ======
     function loadPinnedAndRecent() {
-      try {
-        const pinRaw = window.localStorage.getItem(PINNED_STORAGE_KEY);
-        state.pinned = Array.isArray(JSON.parse(pinRaw || "[]")) ? JSON.parse(pinRaw) : [];
-      } catch (_) { state.pinned = []; }
-      try {
-        const recRaw = window.localStorage.getItem(RECENT_STORAGE_KEY);
-        state.recent = Array.isArray(JSON.parse(recRaw || "[]")) ? JSON.parse(recRaw) : [];
-      } catch (_) { state.recent = []; }
+      const safeArr = (raw) => {
+        if (!raw) return [];
+        try {
+          const v = JSON.parse(raw);
+          return Array.isArray(v) ? v : [];
+        } catch (_) { return []; }
+      };
+      state.pinned = safeArr(window.localStorage.getItem(PINNED_STORAGE_KEY));
+      state.recent = safeArr(window.localStorage.getItem(RECENT_STORAGE_KEY));
       state.pinned = state.pinned.filter((k) => itemByKey(k)).slice(0, MAX_PINNED);
       state.recent = state.recent.filter((k) => itemByKey(k)).slice(0, MAX_RECENT);
     }
