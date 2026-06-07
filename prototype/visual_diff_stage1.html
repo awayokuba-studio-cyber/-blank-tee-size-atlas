@@ -2250,22 +2250,50 @@
       const p = buildFrontFlatTemplate(item, bounds);
       if (!p) return "";
 
-      // Stage 1.6: page 1 front template uses a stable sleeve-under line;
-      // the armhole is shown as an internal technical stitch, not a deep outer cut.
+      // フラットスケッチ風アウトライン:
+      // - 首元(C) → 肩線はわずかにS字
+      // - 肩先 → 袖先上端は緩いカーブ（袖の自然な流れ）
+      // - 袖口は直線
+      // - 袖下 → 脇下は緩やかなS字（腕の付け根のなだらかさ）
+      // - 脇下〜裾は直線
+      const shoulderRiseR = Math.max(2, p.bodyH * 0.008); // 肩のわずかな盛り上がり
+      const armpitCurveR  = Math.max(4, p.bodyW * 0.02);  // 脇下〜袖下の張り出し
+      const sleeveSagR    = Math.max(2, p.bodyH * 0.005); // 袖先までのわずかな下垂
+
       return [
+        // 首元（既存）
         `M ${p.leftNeck} ${p.neckTopY}`,
         `C ${p.leftNeck + p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck - p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck} ${p.neckTopY}`,
-        `L ${p.rightShoulder} ${p.shoulderY}`,
-        `L ${p.rightSleeveTop} ${p.sleeveTopY}`,
+        // 首右端 → 右肩先（軽くS字、肩がやや盛り上がる）
+        `C ${p.rightNeck + (p.rightShoulder - p.rightNeck) * 0.4} ${p.neckTopY - shoulderRiseR} ` +
+          `${p.rightShoulder - (p.rightShoulder - p.rightNeck) * 0.18} ${p.shoulderY - shoulderRiseR * 0.6} ` +
+          `${p.rightShoulder} ${p.shoulderY}`,
+        // 右肩 → 袖先上端（自然なカーブ）
+        `Q ${(p.rightShoulder + p.rightSleeveTop) / 2} ${p.shoulderY + (p.sleeveTopY - p.shoulderY) * 0.5 - sleeveSagR} ` +
+          `${p.rightSleeveTop} ${p.sleeveTopY}`,
+        // 袖口（直線）
         `L ${p.rightSleeveBottom} ${p.sleeveBottomY}`,
-        `L ${p.rightBody} ${p.underArmY}`,
+        // 袖下 → 脇下（緩やかなS字、外側に張り出すカーブ）
+        `Q ${(p.rightSleeveBottom + p.rightBody) / 2 + armpitCurveR} ${p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.45} ` +
+          `${p.rightBody} ${p.underArmY}`,
+        // 脇下 → 裾右（直線）
         `L ${p.rightHem} ${p.bottom}`,
+        // 裾（直線）
         `L ${p.leftHem} ${p.bottom}`,
+        // 裾 → 左脇下（対称）
         `L ${p.leftBody} ${p.underArmY}`,
-        `L ${p.leftSleeveBottom} ${p.sleeveBottomY}`,
+        // 左脇下 → 袖下（緩やかなS字、対称）
+        `Q ${(p.leftSleeveBottom + p.leftBody) / 2 - armpitCurveR} ${p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.45} ` +
+          `${p.leftSleeveBottom} ${p.sleeveBottomY}`,
+        // 袖口（直線）
         `L ${p.leftSleeveTop} ${p.sleeveTopY}`,
-        `L ${p.leftShoulder} ${p.shoulderY}`,
-        `L ${p.leftNeck} ${p.neckTopY}`,
+        // 袖先 → 左肩先（カーブ）
+        `Q ${(p.leftShoulder + p.leftSleeveTop) / 2} ${p.shoulderY + (p.sleeveTopY - p.shoulderY) * 0.5 - sleeveSagR} ` +
+          `${p.leftShoulder} ${p.shoulderY}`,
+        // 左肩 → 首左端（S字、右側と対称）
+        `C ${p.leftShoulder + (p.leftNeck - p.leftShoulder) * 0.18} ${p.shoulderY - shoulderRiseR * 0.6} ` +
+          `${p.leftNeck - (p.leftNeck - p.leftShoulder) * 0.4} ${p.neckTopY - shoulderRiseR} ` +
+          `${p.leftNeck} ${p.neckTopY}`,
         "Z"
       ].join(" ");
     }
