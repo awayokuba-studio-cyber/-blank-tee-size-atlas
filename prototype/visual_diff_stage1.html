@@ -2118,7 +2118,7 @@
         minFromBody: 0.17,
         maxFromBody: 0.27,
         axisDropFromLength: 0.34,
-        openingFromLength: 0.48,
+        openingFromLength: 0.78, // was 0.48; 袖が窄まりすぎる問題に対応
         cuffSlantFromLength: 0.14,
         underArmGapFromLength: 0.28
       }
@@ -2175,8 +2175,8 @@
       const shoulderY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.shoulderY, 14, 22);
       const sleeveOpening = clamp(
         sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.openingFromLength,
-        bodyH * 0.075,
-        bodyH * 0.12
+        bodyH * 0.14, // was 0.075; 袖を太く
+        bodyH * 0.22  // was 0.12
       );
       const sleeveCuffCenterY = shoulderY + sleeveDrop;
       const underArmY = clamp(
@@ -2257,8 +2257,12 @@
       // - 袖下 → 脇下は緩やかなS字（腕の付け根のなだらかさ）
       // - 脇下〜裾は直線
       const shoulderRiseR = Math.max(2, p.bodyH * 0.008); // 肩のわずかな盛り上がり
-      const armpitCurveR  = Math.max(4, p.bodyW * 0.02);  // 脇下〜袖下の張り出し
       const sleeveSagR    = Math.max(2, p.bodyH * 0.005); // 袖先までのわずかな下垂
+
+      // 袖下→脇下カーブ：制御点は「脇下のすぐ上、袖の太さを保ったまま下りる」位置
+      // 急激に内側へ絞らないよう、制御点x を rightBody より外（または同等）に置く
+      const armpitCtrlR_x = (p) => p.rightBody + Math.max(2, p.bodyW * 0.01); // ほぼ脇下の真上
+      const armpitCtrlR_y = (p) => p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.85; // 制御点を脇下寄り
 
       return [
         // 首元（既存）
@@ -2273,18 +2277,16 @@
           `${p.rightSleeveTop} ${p.sleeveTopY}`,
         // 袖口（直線）
         `L ${p.rightSleeveBottom} ${p.sleeveBottomY}`,
-        // 袖下 → 脇下（緩やかなS字、外側に張り出すカーブ）
-        `Q ${(p.rightSleeveBottom + p.rightBody) / 2 + armpitCurveR} ${p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.45} ` +
-          `${p.rightBody} ${p.underArmY}`,
+        // 袖下 → 脇下（袖の太さを保って外側へ広げ、最後に脇下へ）
+        `Q ${armpitCtrlR_x(p)} ${armpitCtrlR_y(p)} ${p.rightBody} ${p.underArmY}`,
         // 脇下 → 裾右（直線）
         `L ${p.rightHem} ${p.bottom}`,
         // 裾（直線）
         `L ${p.leftHem} ${p.bottom}`,
         // 裾 → 左脇下（対称）
         `L ${p.leftBody} ${p.underArmY}`,
-        // 左脇下 → 袖下（緩やかなS字、対称）
-        `Q ${(p.leftSleeveBottom + p.leftBody) / 2 - armpitCurveR} ${p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.45} ` +
-          `${p.leftSleeveBottom} ${p.sleeveBottomY}`,
+        // 左脇下 → 袖下（対称）
+        `Q ${p.leftBody - Math.max(2, p.bodyW * 0.01)} ${armpitCtrlR_y(p)} ${p.leftSleeveBottom} ${p.sleeveBottomY}`,
         // 袖口（直線）
         `L ${p.leftSleeveTop} ${p.sleeveTopY}`,
         // 袖先 → 左肩先（カーブ）
@@ -2526,31 +2528,48 @@
       });
     }
 
-    function drawMeasurementGuide(svg, _baseline, compared, bounds) {
+    function drawMeasurementGuide(svg, baseline, compared, bounds) {
       const comparedPoints = templatePoints(compared, bounds);
-      if (!comparedPoints) return;
+      const baselinePoints = templatePoints(baseline, bounds);
+      if (!comparedPoints || !baselinePoints) return;
 
       const group = createSvgElement("g", {
-        "aria-label": "measurement guide overlay for compared item"
+        "aria-label": "measurement guide overlay for baseline and compared"
       });
 
-      const guideCaption = createSvgElement("text", {
-        x: 30,
-        y: 54,
-        fill: "#126a7a",
-        "font-size": "13",
-        "font-weight": "700"
+      const captionBase = createSvgElement("text", {
+        x: 30, y: 40, fill: "#6f716a",
+        "font-size": "12", "font-weight": "700"
       });
-      guideCaption.textContent = "採寸位置：比較対象の各部寸法";
-      group.appendChild(guideCaption);
+      captionBase.textContent = "基準: 灰の線（essentials L）";
+      group.appendChild(captionBase);
 
+      const captionCmp = createSvgElement("text", {
+        x: 30, y: 58, fill: "#126a7a",
+        "font-size": "12", "font-weight": "700"
+      });
+      captionCmp.textContent = "比較対象: 青の線";
+      group.appendChild(captionCmp);
+
+      // 基準: グレー破線・ラベル省略（混雑回避、寸法は dims-bar の "基準" 行で参照可）
+      drawMeasurementGuideForItem(group, baseline, baselinePoints, {
+        color: "#8b8e89",
+        width: 1,
+        dash: "3 5",
+        opacity: 0.42,
+        radius: 2.2,
+        pointOpacity: 0.5,
+        halo: false
+      }, false);
+
+      // 比較対象: ティール線・ラベルあり
       drawMeasurementGuideForItem(group, compared, comparedPoints, {
         color: "#2f7c88",
         width: 1,
         dash: "4 5",
-        opacity: 0.4,
-        radius: 2.5,
-        pointOpacity: 0.56,
+        opacity: 0.55,
+        radius: 2.6,
+        pointOpacity: 0.62,
         halo: true
       }, true);
 
@@ -2911,7 +2930,7 @@
     }
 
     function renderDimsBar(baseline, compared, diffs) {
-      // SVG直下の4分割寸法バー（ショップ用途：実寸主軸）
+      // SVG直下の4分割寸法バー（比較対象=主軸 + 基準=サブ + 差分）
       $("dimsBar").innerHTML = AXES.map(([key, label]) => {
         const value = diffs[key];
         const absVal = compared.dimensions[key];
@@ -2923,7 +2942,7 @@
             <div class="dims-name">${label}</div>
             <div class="dims-value">${cm(absVal)}<span class="dims-unit">cm</span></div>
             <div class="dims-diff ${closeness}">${diffStr}</div>
-            <div class="dims-base">基準 ${cm(baseVal)}</div>
+            <div class="dims-base"><span class="dims-base-dot"></span>基準 ${cm(baseVal)}cm</div>
           </div>
         `;
       }).join("");
