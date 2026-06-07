@@ -2178,7 +2178,10 @@
         bodyH * 0.14, // was 0.075; 袖を太く
         bodyH * 0.22  // was 0.12
       );
-      const sleeveCuffCenterY = shoulderY + sleeveDrop;
+      // 袖上端は肩先よりわずかに下げる（肩→袖が斜め上に向かわないよう固定）。
+      // 袖中心 = 肩先 + 上端ドロップ + 袖の太さの半分。
+      const sleeveTopDrop = clamp(bodyH * 0.02, 4, 12);
+      const sleeveCuffCenterY = shoulderY + sleeveTopDrop + sleeveOpening / 2;
       const underArmY = clamp(
         sleeveCuffCenterY + sleeveOpening / 2 + sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.underArmGapFromLength,
         top + bodyH * 0.22,
