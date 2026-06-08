@@ -2173,20 +2173,18 @@
       const leftShoulder = centerX - halfShoulder;
       const rightShoulder = centerX + halfShoulder;
       const shoulderY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.shoulderY, 14, 22);
-      const sleeveOpening = clamp(
-        sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.openingFromLength,
-        bodyH * 0.14, // was 0.075; 袖を太く
-        bodyH * 0.22  // was 0.12
-      );
-      // 袖上端は肩先よりわずかに下げる（肩→袖が斜め上に向かわないよう固定）。
-      // 袖中心 = 肩先 + 上端ドロップ + 袖の太さの半分。
-      const sleeveTopDrop = clamp(bodyH * 0.02, 4, 12);
-      const sleeveCuffCenterY = shoulderY + sleeveTopDrop + sleeveOpening / 2;
-      const underArmY = clamp(
-        sleeveCuffCenterY + sleeveOpening / 2 + sleeveLength * FRONT_FLAT_TEMPLATE.sleeve.underArmGapFromLength,
-        top + bodyH * 0.22,
-        top + bodyH * 0.3
-      );
+      // ===== 袖の形（フラットスケッチ風・肩線と袖下線を平行に）=====
+      // 脇下は身丈ベースで決める（袖の太さと独立）
+      const underArmY = top + clamp(bodyH * 0.26, bodyH * 0.22, bodyH * 0.3);
+      // 付け根ベクトル（肩先→脇下）。袖口をこれと平行に傾けると、
+      // 肩線（肩先→袖口上端）と袖下線（脇下→袖口下端）が平行な帯になる。
+      const armholeVX = rightBody - rightShoulder;
+      const armholeVY = underArmY - shoulderY;
+      const armWidthRatio = 0.86; // 袖口の縦幅 / 付け根の縦幅（1に近いほど均一な帯）
+      const cuffHalfX = 0.5 * armWidthRatio * armholeVX;
+      const cuffHalfY = 0.5 * armWidthRatio * armholeVY;
+      // 袖口中心Y（付け根中点よりわずかに下げ、肩線をなだらかに下げる）
+      const sleeveCuffCenterY = (shoulderY + underArmY) / 2 + clamp(bodyH * 0.012, 2, 8);
       const neckW = clamp(
         shoulderW * FRONT_FLAT_TEMPLATE.neck.widthFromShoulder,
         bodyW * FRONT_FLAT_TEMPLATE.neck.minFromBody,
@@ -2197,12 +2195,13 @@
       const neckTopY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.neck.topOffset, 4, 7);
       const rightSleeveCuffCenterX = rightShoulder + sleeveLength;
       const leftSleeveCuffCenterX = leftShoulder - sleeveLength;
-      const rightSleeveTop = rightSleeveCuffCenterX + cuffSlant / 2;
-      const rightSleeveBottom = rightSleeveCuffCenterX - cuffSlant / 2;
-      const leftSleeveTop = leftSleeveCuffCenterX - cuffSlant / 2;
-      const leftSleeveBottom = leftSleeveCuffCenterX + cuffSlant / 2;
-      const sleeveTopY = sleeveCuffCenterY - sleeveOpening / 2;
-      const sleeveBottomY = sleeveCuffCenterY + sleeveOpening / 2;
+      // 袖口は付け根と平行に傾ける（上端=内側やや上、下端=外側やや下）
+      const rightSleeveTop = rightSleeveCuffCenterX - cuffHalfX;
+      const rightSleeveBottom = rightSleeveCuffCenterX + cuffHalfX;
+      const leftSleeveTop = leftSleeveCuffCenterX + cuffHalfX;
+      const leftSleeveBottom = leftSleeveCuffCenterX - cuffHalfX;
+      const sleeveTopY = sleeveCuffCenterY - cuffHalfY;
+      const sleeveBottomY = sleeveCuffCenterY + cuffHalfY;
       const hemInset = clamp(bodyW * FRONT_FLAT_TEMPLATE.hemInset, 3, 8);
       const leftNeck = centerX - neckW / 2;
       const rightNeck = centerX + neckW / 2;
@@ -2259,43 +2258,37 @@
       // - 袖口は直線
       // - 袖下 → 脇下は緩やかなS字（腕の付け根のなだらかさ）
       // - 脇下〜裾は直線
-      const shoulderRiseR = Math.max(2, p.bodyH * 0.008); // 肩のわずかな盛り上がり
-      const sleeveSagR    = Math.max(2, p.bodyH * 0.005); // 袖先までのわずかな下垂
+      const shoulderRiseR = Math.max(2, p.bodyH * 0.008); // 首→肩先のわずかな盛り上がり
 
-      // 袖下→脇下カーブ：制御点は「脇下のすぐ上、袖の太さを保ったまま下りる」位置
-      // 急激に内側へ絞らないよう、制御点x を rightBody より外（または同等）に置く
-      const armpitCtrlR_x = (p) => p.rightBody + Math.max(2, p.bodyW * 0.01); // ほぼ脇下の真上
-      const armpitCtrlR_y = (p) => p.sleeveBottomY + (p.underArmY - p.sleeveBottomY) * 0.85; // 制御点を脇下寄り
-
+      // 肩線（肩先→袖口上端）と袖下線（脇下→袖口下端）を直線にすることで、
+      // 両者が平行な「帯状の袖」に見える。首元のみカーブ。
       return [
-        // 首元（既存）
+        // 首元（リブネックのU字）
         `M ${p.leftNeck} ${p.neckTopY}`,
         `C ${p.leftNeck + p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck - p.neckW * 0.17} ${p.neckMidY} ${p.rightNeck} ${p.neckTopY}`,
-        // 首右端 → 右肩先（軽くS字、肩がやや盛り上がる）
+        // 首右端 → 右肩先（軽いカーブ、肩がやや盛り上がる）
         `C ${p.rightNeck + (p.rightShoulder - p.rightNeck) * 0.4} ${p.neckTopY - shoulderRiseR} ` +
           `${p.rightShoulder - (p.rightShoulder - p.rightNeck) * 0.18} ${p.shoulderY - shoulderRiseR * 0.6} ` +
           `${p.rightShoulder} ${p.shoulderY}`,
-        // 右肩 → 袖先上端（自然なカーブ）
-        `Q ${(p.rightShoulder + p.rightSleeveTop) / 2} ${p.shoulderY + (p.sleeveTopY - p.shoulderY) * 0.5 - sleeveSagR} ` +
-          `${p.rightSleeveTop} ${p.sleeveTopY}`,
+        // 右肩先 → 袖口上端（直線＝肩線）
+        `L ${p.rightSleeveTop} ${p.sleeveTopY}`,
         // 袖口（直線）
         `L ${p.rightSleeveBottom} ${p.sleeveBottomY}`,
-        // 袖下 → 脇下（袖の太さを保って外側へ広げ、最後に脇下へ）
-        `Q ${armpitCtrlR_x(p)} ${armpitCtrlR_y(p)} ${p.rightBody} ${p.underArmY}`,
+        // 袖口下端 → 脇下（直線＝袖下線。肩線と平行）
+        `L ${p.rightBody} ${p.underArmY}`,
         // 脇下 → 裾右（直線）
         `L ${p.rightHem} ${p.bottom}`,
         // 裾（直線）
         `L ${p.leftHem} ${p.bottom}`,
         // 裾 → 左脇下（対称）
         `L ${p.leftBody} ${p.underArmY}`,
-        // 左脇下 → 袖下（対称）
-        `Q ${p.leftBody - Math.max(2, p.bodyW * 0.01)} ${armpitCtrlR_y(p)} ${p.leftSleeveBottom} ${p.sleeveBottomY}`,
+        // 左脇下 → 袖口下端（直線＝袖下線）
+        `L ${p.leftSleeveBottom} ${p.sleeveBottomY}`,
         // 袖口（直線）
         `L ${p.leftSleeveTop} ${p.sleeveTopY}`,
-        // 袖先 → 左肩先（カーブ）
-        `Q ${(p.leftShoulder + p.leftSleeveTop) / 2} ${p.shoulderY + (p.sleeveTopY - p.shoulderY) * 0.5 - sleeveSagR} ` +
-          `${p.leftShoulder} ${p.shoulderY}`,
-        // 左肩 → 首左端（S字、右側と対称）
+        // 袖口上端 → 左肩先（直線＝肩線）
+        `L ${p.leftShoulder} ${p.shoulderY}`,
+        // 左肩先 → 首左端（カーブ、右側と対称）
         `C ${p.leftShoulder + (p.leftNeck - p.leftShoulder) * 0.18} ${p.shoulderY - shoulderRiseR * 0.6} ` +
           `${p.leftNeck - (p.leftNeck - p.leftShoulder) * 0.4} ${p.neckTopY - shoulderRiseR} ` +
           `${p.leftNeck} ${p.neckTopY}`,
