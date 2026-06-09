@@ -2173,18 +2173,14 @@
       const leftShoulder = centerX - halfShoulder;
       const rightShoulder = centerX + halfShoulder;
       const shoulderY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.shoulderY, 14, 22);
-      // ===== 袖の形（フラットスケッチ風・肩線と袖下線を平行に）=====
+      // ===== 袖の形（フラットスケッチ風・左右対称の台形）=====
       // 脇下は身丈ベースで決める（袖の太さと独立）
       const underArmY = top + clamp(bodyH * 0.26, bodyH * 0.22, bodyH * 0.3);
-      // 付け根ベクトル（肩先→脇下）。袖口をこれと平行に傾けると、
-      // 肩線（肩先→袖口上端）と袖下線（脇下→袖口下端）が平行な帯になる。
-      const armholeVX = rightBody - rightShoulder;
-      const armholeVY = underArmY - shoulderY;
-      const armWidthRatio = 0.86; // 袖口の縦幅 / 付け根の縦幅（1に近いほど均一な帯）
-      const cuffHalfX = 0.5 * armWidthRatio * armholeVX;
-      const cuffHalfY = 0.5 * armWidthRatio * armholeVY;
-      // 袖口中心Y（付け根中点よりわずかに下げ、肩線をなだらかに下げる）
-      const sleeveCuffCenterY = (shoulderY + underArmY) / 2 + clamp(bodyH * 0.012, 2, 8);
+      const armholeHeight = underArmY - shoulderY;   // 付け根（肩先〜脇下）の縦幅
+      const cuffHeight = armholeHeight * 0.72;        // 袖口の縦幅（= 袖の太さ）
+      // 袖口中心を付け根中点に置くと、肩線（肩先→袖口上端）の下り角と
+      // 袖下線（脇下→袖口下端）の上り角が対称になり、袖口は垂直に立つ。
+      const sleeveCuffCenterY = (shoulderY + underArmY) / 2;
       const neckW = clamp(
         shoulderW * FRONT_FLAT_TEMPLATE.neck.widthFromShoulder,
         bodyW * FRONT_FLAT_TEMPLATE.neck.minFromBody,
@@ -2195,13 +2191,13 @@
       const neckTopY = top + clamp(bodyH * FRONT_FLAT_TEMPLATE.neck.topOffset, 4, 7);
       const rightSleeveCuffCenterX = rightShoulder + sleeveLength;
       const leftSleeveCuffCenterX = leftShoulder - sleeveLength;
-      // 袖口は付け根と平行に傾ける（上端=内側やや上、下端=外側やや下）
-      const rightSleeveTop = rightSleeveCuffCenterX - cuffHalfX;
-      const rightSleeveBottom = rightSleeveCuffCenterX + cuffHalfX;
-      const leftSleeveTop = leftSleeveCuffCenterX + cuffHalfX;
-      const leftSleeveBottom = leftSleeveCuffCenterX - cuffHalfX;
-      const sleeveTopY = sleeveCuffCenterY - cuffHalfY;
-      const sleeveBottomY = sleeveCuffCenterY + cuffHalfY;
+      // 袖口は地面に対して垂直（上端・下端とも同じX）
+      const rightSleeveTop = rightSleeveCuffCenterX;
+      const rightSleeveBottom = rightSleeveCuffCenterX;
+      const leftSleeveTop = leftSleeveCuffCenterX;
+      const leftSleeveBottom = leftSleeveCuffCenterX;
+      const sleeveTopY = sleeveCuffCenterY - cuffHeight / 2;
+      const sleeveBottomY = sleeveCuffCenterY + cuffHeight / 2;
       const hemInset = clamp(bodyW * FRONT_FLAT_TEMPLATE.hemInset, 3, 8);
       const leftNeck = centerX - neckW / 2;
       const rightNeck = centerX + neckW / 2;
