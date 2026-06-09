@@ -557,6 +557,103 @@
       font-size: 12px;
     }
 
+    .list-view {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-view[hidden] { display: none; }
+
+    .list-view-head { display: grid; gap: 4px; }
+
+    .list-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .list-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 540px;
+      font-size: 12.5px;
+    }
+
+    .list-table th,
+    .list-table td {
+      padding: 7px 8px;
+      text-align: center;
+      border-bottom: 1px solid #ece9df;
+      white-space: nowrap;
+    }
+
+    .list-table thead th {
+      position: sticky;
+      top: 0;
+      background: #f7f6f1;
+      font-size: 11.5px;
+      color: var(--muted);
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .list-table th.col-name,
+    .list-table td.col-name {
+      text-align: left;
+      white-space: normal;
+      min-width: 150px;
+      position: sticky;
+      left: 0;
+      background: var(--panel);
+      z-index: 1;
+    }
+
+    .list-table thead th.col-name {
+      background: #f7f6f1;
+      z-index: 2;
+    }
+
+    .list-row {
+      cursor: pointer;
+    }
+
+    .list-row:hover .col-name {
+      background: var(--compare-soft);
+    }
+
+    .list-row.is-current .col-name {
+      background: var(--compare-soft);
+      box-shadow: inset 3px 0 0 var(--compare);
+    }
+
+    .list-row.is-baseline .col-name {
+      background: rgba(109, 112, 106, 0.1);
+      box-shadow: inset 3px 0 0 var(--baseline);
+    }
+
+    .list-cell-abs {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    .list-cell-diff {
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+      margin-top: 1px;
+    }
+
+    .list-name-brand { font-weight: 700; }
+    .list-name-sub { font-size: 11px; color: var(--muted); }
+
+    .diff-close { background: rgba(78, 114, 87, 0.12); }
+    .diff-mid   { background: rgba(159, 95, 58, 0.08); }
+    .diff-far   { background: rgba(159, 95, 58, 0.18); }
+
     .tab-row {
       display: inline-grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -567,6 +664,11 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #f1f0eb;
+    }
+
+    .tab-row-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: min(100%, 420px);
     }
 
     .tab-button {
@@ -992,12 +1094,23 @@
       </div>
     </section>
 
-    <section class="tab-row" aria-label="display mode">
+    <section class="tab-row tab-row-3" aria-label="display mode">
       <button class="tab-button" type="button" data-tab="compare" aria-pressed="true">比較</button>
       <button class="tab-button" type="button" data-tab="guide" aria-pressed="false">採寸ガイド</button>
+      <button class="tab-button" type="button" data-tab="list" aria-pressed="false">一覧</button>
     </section>
 
-    <section class="surface">
+    <section class="list-view" id="listView" hidden aria-label="全Tシャツの寸法一覧">
+      <div class="list-view-head">
+        <h2>寸法一覧（基準 awayokuba essentials L との差）</h2>
+        <p class="hint">各セル上段＝その製品の実寸、下段＝基準との差。<span style="color:var(--green);font-weight:700;">緑</span>=近い / <span style="color:var(--warm);font-weight:700;">橙</span>=離れる。行をタップで比較表示。</p>
+      </div>
+      <div class="list-table-wrap">
+        <table class="list-table" id="listTable"></table>
+      </div>
+    </section>
+
+    <section class="surface" id="surface">
       <section class="visual" aria-label="outline comparison">
         <div class="visual-top">
           <div style="min-width:0;">
@@ -1238,8 +1351,7 @@
       userInputCounter: 0,
       baselineKey: FIXED_BASELINE_KEY,
       compareKey: "everyone_3p_ss:L",
-      mode: "compare",
-      measurementGuide: false,
+      activeView: "compare", // "compare" | "guide" | "list"
       pinned: [],
       recent: []
     };
@@ -1525,7 +1637,7 @@
     }
 
     function activeTab() {
-      return state.measurementGuide ? "guide" : "compare";
+      return state.activeView;
     }
 
     function syncTabButtons() {
@@ -1538,9 +1650,7 @@
     function renderModeControls() {
       document.querySelectorAll(".tab-button").forEach((button) => {
         button.addEventListener("click", () => {
-          const tab = button.dataset.tab;
-          state.mode = "compare"; // 単一モード化（着用差分タブ廃止）
-          state.measurementGuide = (tab === "guide");
+          state.activeView = button.dataset.tab; // "compare" | "guide" | "list"
           syncTabButtons();
           render();
         });
@@ -1550,7 +1660,7 @@
 
     function updateMeasurementGuideControl() {
       syncTabButtons();
-      $("measurementGuideNote").textContent = state.measurementGuide
+      $("measurementGuideNote").textContent = state.activeView === "guide"
         ? "肩先〜肩先（肩幅）、脇下〜脇下（身幅）、首元〜裾（着丈）、肩先〜袖口（袖丈）。"
         : "";
     }
@@ -2671,7 +2781,7 @@
         detailOpacity: 0.72
       });
 
-      if (state.measurementGuide) drawMeasurementGuide(svg, baseline, compared, bounds);
+      if (state.activeView === "guide") drawMeasurementGuide(svg, baseline, compared, bounds);
 
       $("scaleHint").textContent = "グリッド 1マス = 5cm（実寸目安）。図は判断補助用の概略表示で、正確な型紙ではありません。";
     }
@@ -3021,10 +3131,106 @@
       $("modeCaution").textContent = `${$("modeCaution").textContent} 比較対象の ${label} はユーザー入力です。verified data ではなく、このセッションだけで扱います。ページを閉じると消えます。`;
     }
 
+    function diffClass(value) {
+      const abs = Math.abs(value);
+      if (abs <= 0.7) return "diff-close";
+      if (abs <= 2.5) return "diff-mid";
+      return "diff-far";
+    }
+
+    function diffTextColor(value) {
+      return Math.abs(value) <= 0.7 ? "var(--green)" : "var(--warm)";
+    }
+
+    function renderListView() {
+      const baseline = itemByKey(state.baselineKey);
+      if (!baseline) return;
+      const table = $("listTable");
+
+      // ヘッダ
+      const head = `
+        <thead>
+          <tr>
+            <th class="col-name">Tシャツ / サイズ</th>
+            ${AXES.map(([, label]) => `<th>${label}</th>`).join("")}
+          </tr>
+        </thead>
+      `;
+
+      // 行: 基準を先頭、その後は比較候補（baselineを除く）
+      const rows = compareItems();
+      const ordered = [
+        baseline,
+        ...rows.filter((it) => keyOf(it) !== state.baselineKey)
+      ];
+
+      const bodyRows = ordered.map((item) => {
+        const key = keyOf(item);
+        const isBase = key === state.baselineKey;
+        const isCurrent = key === state.compareKey && !isBase;
+        const diffs = isBase ? null : difference(baseline, item);
+
+        const brand = isUserInput(item) ? "ユーザー入力" : (item.brand || "");
+        const sub = isUserInput(item)
+          ? `${item.display_name}`
+          : `${item.product_name || ""} / ${item.size}`;
+
+        const cells = AXES.map(([axisKey]) => {
+          const absVal = item.dimensions[axisKey];
+          if (isBase) {
+            return `<td><span class="list-cell-abs">${cm(absVal)}</span><div class="list-cell-diff" style="color:var(--muted);">基準</div></td>`;
+          }
+          const v = diffs[axisKey];
+          return `
+            <td class="${diffClass(v)}">
+              <span class="list-cell-abs">${cm(absVal)}</span>
+              <div class="list-cell-diff" style="color:${diffTextColor(v)};">${v === 0 ? "±0" : sign(v) + cm(v)}</div>
+            </td>
+          `;
+        }).join("");
+
+        const rowClass = isBase ? "list-row is-baseline" : (isCurrent ? "list-row is-current" : "list-row");
+        return `
+          <tr class="${rowClass}" data-key="${escapeHTML(key)}">
+            <td class="col-name">
+              <div class="list-name-brand">${escapeHTML(brand)}</div>
+              <div class="list-name-sub">${escapeHTML(sub)}</div>
+            </td>
+            ${cells}
+          </tr>
+        `;
+      }).join("");
+
+      table.innerHTML = head + `<tbody>${bodyRows}</tbody>`;
+
+      table.querySelectorAll(".list-row").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          const key = tr.dataset.key;
+          if (!key || key === state.baselineKey || !itemByKey(key)) return;
+          state.compareKey = key;
+          state.activeView = "compare";
+          syncTabButtons();
+          renderControls();
+          render();
+        });
+      });
+    }
+
     function render() {
       const baseline = itemByKey(state.baselineKey);
       const compared = itemByKey(state.compareKey);
       if (!baseline || !compared) return;
+
+      const isList = state.activeView === "list";
+      $("surface").hidden = isList;
+      $("listView").hidden = !isList;
+      syncTabButtons();
+
+      if (isList) {
+        renderListView();
+        renderSessionTeeList();
+        return;
+      }
 
       // カードタイトル: 比較対象を主語に、基準はサブ表示
       $("pairTitle").textContent = isUserInput(compared)
@@ -3034,7 +3240,7 @@
       updateMeasurementGuideControl();
       const diffs = difference(baseline, compared);
       $("legend").dataset.mode = "compare";
-      $("modeDescription").textContent = state.measurementGuide
+      $("modeDescription").textContent = state.activeView === "guide"
         ? "比較対象に採寸位置（肩幅・身幅・着丈・袖丈の測り方）を重ねています。"
         : "比較対象（青）と基準（グレー）を同じ縮尺で重ねた図です。";
       drawOutlines(baseline, compared, diffs);
