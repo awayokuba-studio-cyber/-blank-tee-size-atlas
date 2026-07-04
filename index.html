@@ -1,11 +1,222 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=prototype/visual_diff_stage1.html">
-  <title>Blank Tee Size Atlas</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Blank Tee Size Atlas — 無地Tシャツのサイズ差を、図で判断する</title>
+  <meta name="description" content="基準のTシャツと候補のTシャツを同じ縮尺で重ね、寸法差を図で確認できる判断補助ツール。試着できない場面のサイズ選びを支えます。">
+  <meta property="og:title" content="Blank Tee Size Atlas">
+  <meta property="og:description" content="無地Tシャツのサイズ差を、同じ縮尺の図で判断する。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👕</text></svg>">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #22231f;
+      --muted: #6f716a;
+      --line: #dad8cf;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --accent: #126a7a;
+      --accent-soft: rgba(18, 106, 122, 0.08);
+      --warm: #9f5f3a;
+      --green: #4e7257;
+      --shadow: 0 16px 40px rgba(42, 39, 33, 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.75;
+    }
+    main {
+      width: min(880px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 56px 0 72px;
+    }
+    h1 {
+      font-size: clamp(30px, 6vw, 46px);
+      line-height: 1.2;
+      margin: 0 0 8px;
+      letter-spacing: 0.01em;
+    }
+    .tagline {
+      font-size: clamp(15px, 2.6vw, 18px);
+      color: var(--muted);
+      margin: 0 0 36px;
+      max-width: 640px;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 0 0 56px;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 52px;
+      padding: 12px 26px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      border: 1px solid var(--line);
+    }
+    .cta.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .cta.secondary {
+      background: var(--panel);
+      color: var(--ink);
+    }
+    section {
+      margin: 0 0 52px;
+    }
+    h2 {
+      font-size: 21px;
+      margin: 0 0 14px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent);
+    }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .card p {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .flow {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+    .flow ol {
+      margin: 0;
+      padding-left: 22px;
+      display: grid;
+      gap: 8px;
+      font-size: 15px;
+    }
+    .note-box {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--warm);
+      border-radius: 8px;
+      background: #fffefa;
+      padding: 16px 20px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    footer {
+      width: min(880px, calc(100% - 40px));
+      margin: 0 auto 40px;
+      color: var(--muted);
+      font-size: 12.5px;
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting… <a href="prototype/visual_diff_stage1.html">こちら</a></p>
+  <main>
+    <header>
+      <h1>Blank Tee Size Atlas</h1>
+      <p class="tagline">無地Tシャツのサイズ差を、同じ縮尺の図で判断する。<br>試着できない場面のサイズ選びを、寸法の重ね合わせで支える判断補助ツールです。</p>
+      <div class="cta-row">
+        <a class="cta primary" href="prototype/visual_diff_stage1.html">デモを開く</a>
+        <a class="cta secondary" href="#about">仕組みを見る</a>
+      </div>
+    </header>
+
+    <section id="about">
+      <h2>何を解決するか</h2>
+      <p>Tシャツの「L」は、ブランドごとに別の服と言っていいほど寸法が違います。サイズ表の数字を見比べても、着たときの差は想像しにくい。その結果、買ってみたら大きすぎた・小さすぎた、が繰り返されます。</p>
+      <p>Blank Tee Size Atlas は、基準となる1枚（自分がいちばん信頼しているT）と候補のTシャツを<strong>同じ縮尺のアウトライン図で重ね</strong>、着丈・身幅・肩幅・袖丈の差を図と数値の両方で確認できるようにしたものです。</p>
+    </section>
+
+    <section>
+      <h2>主な機能</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>比較ビュー</h3>
+          <p>基準Tと候補Tを同じ縮尺で重ね、4軸の寸法差を図の直下に表示。ショップの店頭でも片手で確認できます。</p>
+        </div>
+        <div class="card">
+          <h3>一覧ヒートマップ</h3>
+          <p>登録済みの全Tシャツを1画面で俯瞰。基準に近い候補が色で分かり、行タップで比較ビューへ移動します。</p>
+        </div>
+        <div class="card">
+          <h3>採寸ガイド</h3>
+          <p>肩幅・身幅・着丈・袖丈をどこからどこまで測るかを図上に表示。採寸基準の違いによる誤解を減らします。</p>
+        </div>
+        <div class="card">
+          <h3>手持ちTの登録</h3>
+          <p>自分のTシャツを寸法・参考URL・サイズ表のスクリーンショット付きで登録。ブラウザ内に保存され、バックアップの書き出しにも対応します。</p>
+        </div>
+        <div class="card">
+          <h3>お気に入りと履歴</h3>
+          <p>よく見る候補をピン留めし、直近の比較履歴を自動保持。次に開いたとき、いつものTへ最短で戻れます。</p>
+        </div>
+        <div class="card">
+          <h3>出典の明示</h3>
+          <p>寸法データには出典と検証状態（公式 / 公式チャート / 販売店記載 / ユーザー入力）を明記し、確度の違いを見分けられます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>使い方</h2>
+      <div class="flow">
+        <ol>
+          <li>基準のTシャツを決める（いちばん体に合っている1枚）</li>
+          <li>候補のTシャツを選ぶ、または手持ちのTを寸法入力で登録する</li>
+          <li>重ね図と寸法差で「基準よりどこがどれだけ違うか」を確認する</li>
+          <li>迷う候補はピン留めして、店頭やEC閲覧時に呼び出す</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2>EC・ブランドの方へ</h2>
+      <p>この仕組みは、商品ページへの埋め込み（「手持ちのTシャツと比較する」ボタン）としても機能すると考えています。購入前にサイズ差を図で確認できることは、サイズ起因の返品・交換の抑制につながる可能性があります。</p>
+      <p>現在はプロトタイプ段階です。導入や共同検証にご関心があれば、下記までご連絡ください。</p>
+      <p class="muted">contact: AWAYOKUBA STUDIO（準備中）</p>
+    </section>
+
+    <section>
+      <div class="note-box">
+        <strong>データについて：</strong>掲載している寸法は、各ブランドの公式ページ・公式サイズチャート・販売店記載などを出典として整理した参考値です。シーズンや個体により実寸は変動します。正確な寸法は各ブランドの公式情報をご確認ください。本ツールは判断補助を目的とし、寸法の正確性を保証するものではありません。
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Blank Tee Size Atlas β — AWAYOKUBA STUDIO / private beta / not for redistribution</p>
+  </footer>
 </body>
 </html>

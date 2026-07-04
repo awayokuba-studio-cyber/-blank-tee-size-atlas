@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Blank Tee Size Atlas β</title>
+  <meta name="description" content="基準のTシャツと候補のTシャツを同じ縮尺で重ね、寸法差を図で確認できる判断補助ツール。">
+  <meta property="og:title" content="Blank Tee Size Atlas β">
+  <meta property="og:description" content="無地Tシャツのサイズ差を、同じ縮尺の図で判断する。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👕</text></svg>">
   <style>
     :root {
       color-scheme: light;
@@ -1360,7 +1365,8 @@
   </div>
 
   <footer>
-    <p>Blank Tee Size Atlas β / AWAYOKUBA STUDIO の判断補助ツール / last updated: 2026-06-16</p>
+    <p><a href="../index.html" style="color:inherit;">Blank Tee Size Atlas β</a> / AWAYOKUBA STUDIO の判断補助ツール / last updated: 2026-06-16</p>
+    <p>掲載寸法は公式ページ・公式チャート・販売店記載等を出典とする参考値です。実寸はシーズン・個体により変動します。正確な寸法は各ブランドの公式情報をご確認ください。</p>
   </footer>
 
   <script>
@@ -3272,6 +3278,16 @@
       return labelOf(item);
     }
 
+    // データ整備用のプレースホルダーコメントは表示しない（実着の記録だけを見せる）
+    function displayComment(item) {
+      const c = (item.awa_comment || "").trim();
+      if (!c) return "";
+      if (/^未検証 stock 比較用/.test(c)) return "";
+      if (/^未着用。/.test(c)) return "";
+      if (/^公式寸法の比較用/.test(c)) return "";
+      return c;
+    }
+
     function renderMemo(baseline, compared) {
       $("memoGrid").innerHTML = [
         { item: baseline, isBaseline: true },
@@ -3279,7 +3295,7 @@
       ].map(({ item, isBaseline }) => `
         <div class="memo-item">
           <strong>${escapeHTML(memoLabel(item, isBaseline))}</strong>
-          <p>${escapeHTML(item.awa_comment || (isUserInput(item) ? "実着メモなし（ユーザー入力）" : "実着メモなし"))}</p>
+          <p>${escapeHTML(displayComment(item) || (isUserInput(item) ? "実着メモなし（ユーザー入力）" : "実着メモなし"))}</p>
           ${isUserInput(item) ? `<p>${escapeHTML(`補足: brand=${item.brand} / product=${item.product_name}`)}</p>` : ""}
         </div>
       `).join("");
